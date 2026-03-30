@@ -3,20 +3,20 @@
 Titanium Dashboard is a modern, cross-platform stock tracking dashboard. Built
 using Electron, React, and TypeScript, it offers a beautifully
 designed interface with glassmorphism and a premium dark mode aesthetic.
-Real-time stock data is seamlessly fetched using `yahoo-finance2` via IPC to
+Real-time stock data is seamlessly fetched using the Yahoo Finance API via IPC to
 bypass browser CORS constraints, providing accurate, reliable market data.
 
 ## Features
 
-- **Real-time Data**: Fetch the latest quotes without limits using Yahoo
+- **Real-time Data**: fetch the latest quotes without limits using Yahoo
 Finance.
-- **Titanium Aesthetics**: Enjoy a beautifully designed, premium user interface
+- **Titanium Aesthetics**: enjoy a beautifully designed, premium user interface
 with interactive "burnt titanium" highlights.
-- **Cross-platform**: Readily packages for both Windows and Mac using
+- **Cross-platform**: readily packages for both Windows and Mac using
 electron-builder.
-- **Local Persistence**: Saves your settings and ticker list locally without
+- **Local Persistence**: saves your settings and ticker list locally without
 needing a database.
-- **Customizable Defaults**: Define default stocks through an environment
+- **Customizable Defaults**: define default stocks through an environment
 variable.
 
 ## Customizing Default Stocks
@@ -47,16 +47,15 @@ use those tickers as your default dashboard!
     cd titanium-dashboard
     ```
 
-2. **Install dependencies**:
-   Run the following command in the project root to install all necessary
-   packages:
+2. **Install dependencies** - to install all necessary packages run the
+following command in the project root:
 
     ```bash
     npm install
     ```
 
-3. **Start the development server**:
-   To run the app locally with hot-module replacement, execute:
+3. **Start the development server** - to run the app locally with hot-module
+replacement, execute:
     ```bash
     npm run dev
     ```
@@ -102,7 +101,7 @@ npm run build
 - **Frameworks**: [Electron](https://www.electronjs.org/), [React](https://react.dev/), [Vite](https://vitejs.dev/)
 - **Languages**: TypeScript
 - **Styling**: Vanilla CSS (CSS Variables, Flexbox/Grid, Animations)
-- **APIs**: [yahoo-finance2](https://github.com/gadicc/node-yahoo-finance2)
+- **APIs**: Yahoo Finance API (direct fetch)
 - **Icons**: [Heroicons](https://heroicons.com/)
 
 ## Thanks
