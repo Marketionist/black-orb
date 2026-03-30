@@ -1,5 +1,5 @@
 import { app, BrowserWindow, ipcMain } from "electron";
-import yahooFinance from "yahoo-finance2";
+import yf from "./yahoo-finance";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
@@ -73,8 +73,8 @@ app.on("activate", () => {
     }
 });
 
-// Handle ESM default import interop for Node.js
-const yf = new (yahooFinance as any)({ suppressNotices: ["yahooSurvey"] });
+// No longer need yahooFinance interop for Node.js
+// const yf = new (yahooFinance as any)({ suppressNotices: ["yahooSurvey"] });
 
 /**
  * Safely extracts and formats quotes from Yahoo Finance chart data,

@@ -13,7 +13,7 @@ export default defineConfig({
                 vite: {
                     build: {
                         rollupOptions: {
-                            external: ["yahoo-finance2"],
+                            external: [],
                         },
                     },
                 },
