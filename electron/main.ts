@@ -185,10 +185,26 @@ app.whenReady().then(() => {
                 const enrichedQuotes = await Promise.all(
                     quotesArr.map(async (q: StockQuote) => {
                         try {
-                            const chartData = await fetchChartSafe(q.symbol, {
-                                period1,
-                                interval: '15m',
-                            });
+                            let chartData;
+
+                            try {
+                                chartData = await fetchChartSafe(q.symbol, {
+                                    period1,
+                                    interval: '15m',
+                                });
+                            } catch {
+                                try {
+                                    chartData = await fetchChartSafe(q.symbol, {
+                                        period1,
+                                        interval: '1h',
+                                    });
+                                } catch {
+                                    chartData = await fetchChartSafe(q.symbol, {
+                                        period1,
+                                        interval: '1d',
+                                    });
+                                }
+                            }
                             const validClose = getSafeChartQuotes(chartData);
 
                             // Only take data from 9:30 AM onwards of the most recent trading day
