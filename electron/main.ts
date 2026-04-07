@@ -186,18 +186,19 @@ app.whenReady().then(() => {
                     quotesArr.map(async (q: StockQuote) => {
                         try {
                             let chartData;
+
                             try {
                                 chartData = await fetchChartSafe(q.symbol, {
                                     period1,
                                     interval: '15m',
                                 });
-                            } catch (fallbackErr) {
+                            } catch {
                                 try {
                                     chartData = await fetchChartSafe(q.symbol, {
                                         period1,
                                         interval: '1h',
                                     });
-                                } catch (err2) {
+                                } catch {
                                     chartData = await fetchChartSafe(q.symbol, {
                                         period1,
                                         interval: '1d',
