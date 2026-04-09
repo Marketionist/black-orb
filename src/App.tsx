@@ -31,6 +31,7 @@ function App () {
     const [lastUpdated, setLastUpdated,] = useState<Date | null>(null);
     const [timezone, setTimezone,] = useState<string>('Local');
     const [isTeslaMode, setIsTeslaMode,] = useState<boolean>(false);
+    const [resetKey, setResetKey,] = useState<number>(0);
 
     // Keyboard shortcut for Tesla Mode
     useEffect(() => {
@@ -132,9 +133,22 @@ function App () {
         localStorage.removeItem('dashboard_tickers');
         localStorage.removeItem('dashboard_refreshRate');
         localStorage.removeItem('dashboard_timezone');
+
+        const targetKeys = [];
+
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+
+            if (key && key.startsWith('dashboard_target_')) {
+                targetKeys.push(key);
+            }
+        }
+        targetKeys.forEach((key) => localStorage.removeItem(key));
+
         setTickers(getDefaultTickers());
         setRefreshRate(10);
         setTimezone('Local');
+        setResetKey((prev) => prev + 1);
     };
 
     const handleRemoveTicker = (symbol: string) => {
@@ -146,7 +160,7 @@ function App () {
 
     const renderTeslaMode = () =>
         <div className="tesla-mode-container">
-            <svg width="0" height="0" style={{ position: 'absolute', }}>
+            <svg width="0" height="0" className="hidden-svg-defs">
                 <filter id="lightning-wobble">
                     <feTurbulence
                         type="fractalNoise"
@@ -183,6 +197,23 @@ function App () {
             </div>
         </div>;
 
+    const renderTimezoneHint = () => {
+        const resolvedTz =
+            timezone === 'Local' ?
+                new Intl.DateTimeFormat().resolvedOptions().timeZone :
+                timezone;
+        let off = new Intl.DateTimeFormat('en-US', {
+            timeZone: resolvedTz,
+            timeZoneName: 'shortOffset',
+        })
+            .formatToParts(new Date())
+            .find((p) => p.type === 'timeZoneName')
+            ?.value.replace('GMT', 'UTC') || 'UTC+0';
+
+        if (off === 'UTC') { off = 'UTC+0'; }
+        return `${resolvedTz} (${off})`;
+    };
+
     const renderDashboard = () => {
         if (hasError && quotes.length === 0) {
             return (
@@ -213,7 +244,7 @@ function App () {
             <div className="dashboard-grid">
                 {quotes.map((quote) =>
                     <StockCard
-                        key={quote.symbol}
+                        key={`${quote.symbol}-${resetKey}`}
                         symbol={quote.symbol}
                         name={quote.shortName || quote.longName}
                         price={quote.regularMarketPrice}
@@ -221,6 +252,7 @@ function App () {
                         changePercent={quote.regularMarketChangePercent}
                         chart={quote.chart}
                         onRemove={() => handleRemoveTicker(quote.symbol)}
+                        timezone={timezone}
                     />
                 )}
                 {quotes.length === 0 && !isLoading &&
@@ -242,7 +274,6 @@ function App () {
     };
 
     const LOGO_SIZE = 32;
-    const ICON_SIZE = 20;
 
     return (
         <>
@@ -265,8 +296,8 @@ function App () {
                         aria-label={isTeslaMode ? 'Disable tesla mode' : 'Enable tesla mode'}
                     >
                         {isTeslaMode ?
-                            <BoltSlashIcon style={{ width: ICON_SIZE, height: ICON_SIZE, }} /> :
-                            <BoltIcon style={{ width: ICON_SIZE, height: ICON_SIZE, }} />
+                            <BoltSlashIcon className="header-icon" /> :
+                            <BoltIcon className="header-icon" />
                         }
                     </button>
                     <button
@@ -275,7 +306,7 @@ function App () {
                         title="Open settings"
                         aria-label="Open settings"
                     >
-                        <Cog6ToothIcon style={{ width: ICON_SIZE, height: ICON_SIZE, }} />
+                        <Cog6ToothIcon className="header-icon" />
                     </button>
                 </div>
             </header>
@@ -284,8 +315,10 @@ function App () {
 
             {!isTeslaMode && lastUpdated && quotes.length > 0 &&
                 <div className="last-updated">
-                    Last updated: {lastUpdated.toLocaleTimeString()}{' '}
-                    (Updates every {refreshRate}s)
+                    Last updated: {lastUpdated.toLocaleTimeString(undefined, {
+                        timeZone: timezone === 'Local' ? undefined : timezone,
+                    })}{' '}
+                    (Updates every {refreshRate}s) | {renderTimezoneHint()}
                 </div>
             }
 

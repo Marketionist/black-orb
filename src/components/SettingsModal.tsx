@@ -76,7 +76,7 @@ export function SettingsModal ({
                     </button>
                 </div>
 
-                <div className="form-group" style={{ marginBottom: '1.5rem', }}>
+                <div className="form-group form-group-mb">
                     <label>Dashboard Timezone</label>
                     <select
                         value={localTimezone}
@@ -127,25 +127,7 @@ export function SettingsModal ({
                             );
                         })}
                     </select>
-                    <div className="settings-hint">
-                        {(() => {
-                            const resolvedTz =
-                                localTimezone === 'Local' ?
-                                    new Intl.DateTimeFormat().resolvedOptions()
-                                        .timeZone :
-                                    localTimezone;
-                            let off = new Intl.DateTimeFormat('en-US', {
-                                timeZone: resolvedTz,
-                                timeZoneName: 'shortOffset',
-                            })
-                                .formatToParts(new Date())
-                                .find((p) => p.type === 'timeZoneName')
-                                ?.value.replace('GMT', 'UTC') || 'UTC+0';
 
-                            if (off === 'UTC') { off = 'UTC+0'; }
-                            return `Current: ${resolvedTz} (${off})`;
-                        })()}
-                    </div>
                 </div>
 
                 <div className="form-group">

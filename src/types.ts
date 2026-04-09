@@ -20,5 +20,5 @@ export interface HistoricalCharts {
 
 export interface ChartOptions {
   period1: Date
-  interval: '15m' | '1d' | '1wk' | '1mo'
+  interval: '15m' | '1h' | '1d' | '1wk' | '1mo'
 }
