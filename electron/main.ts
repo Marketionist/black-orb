@@ -43,7 +43,7 @@ process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ?
 
 let win: BrowserWindow | null;
 
-function createWindow() {
+function createWindow () {
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
         webPreferences: {
@@ -96,7 +96,7 @@ app.on('activate', () => {
  * Safely extracts and formats quotes from Yahoo Finance chart data,
  * even if the data was only partially validated.
  */
-function getSafeChartQuotes(chartData: { quotes: ChartDataPoint[] }): ChartDataPoint[] {
+function getSafeChartQuotes (chartData: { quotes: ChartDataPoint[] }): ChartDataPoint[] {
     if (!chartData || !chartData.quotes) { return []; }
     return chartData.quotes
         .filter((q) => q && q.close !== null && q.date !== null)
@@ -109,7 +109,7 @@ function getSafeChartQuotes(chartData: { quotes: ChartDataPoint[] }): ChartDataP
 /**
  * Fetches chart data with graceful handling of validation errors.
  */
-async function fetchChartSafe(symbol: string, options: ChartOptions) {
+async function fetchChartSafe (symbol: string, options: ChartOptions) {
     try {
         return await yf.chart(symbol, options);
     } catch (err: unknown) {
@@ -121,7 +121,7 @@ async function fetchChartSafe(symbol: string, options: ChartOptions) {
 /**
  * Calculates the 9:30 AM session start in a specific IANA timezone.
  */
-function getZonedSessionStart(latestDate: Date, timezone: string): Date {
+function getZonedSessionStart (latestDate: Date, timezone: string): Date {
     try {
         const getZoned930 = (date: Date) => {
             const formatter = new Intl.DateTimeFormat('en-US', {
