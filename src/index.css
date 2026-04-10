@@ -145,8 +145,50 @@ button {
     border-color: rgba(212, 175, 55, 0.5);
 }
 
+.icon-btn-active {
+    background: var(--gold-gradient) !important;
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3) !important;
+    height: 32px !important;
+    width: 32px !important;
+}
+
+.icon-btn-active svg {
+    color: #1a1a1a !important;
+    -webkit-text-fill-color: #1a1a1a !important;
+    width: 18px !important;
+    height: 18px !important;
+}
+
+.icon-btn-muted {
+    opacity: 0.6;
+    border-style: dashed !important;
+}
+
+.icon-btn-muted svg {
+    background: var(--gold-gradient) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: var(--gold-medium) !important;
+}
+
+.icon-grey {
+    color: var(--text-muted) !important;
+}
+
+.icon-grey svg {
+    background: none !important;
+    -webkit-text-fill-color: var(--text-muted) !important;
+}
+
+.icon-btn-active-border {
+    border-color: var(--gold-medium) !important;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
+}
+
 .btn-primary {
-    background: var(--gold-gradient);
+
     color: #1a1a1a; /* Dark text for contrast against gold */
     padding: 0.6rem 1.2rem;
     border-radius: var(--border-radius-sm);
@@ -886,22 +928,34 @@ select:focus {
 }
 
 .icon-btn-small {
-    background: transparent;
-    color: var(--text-muted);
-    border: none;
+    background: var(--bg-secondary);
+    color: var(--gold-medium);
+    border: 1px solid var(--border-color);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 24px;
-    width: 24px;
+    height: 28px;
+    width: 28px;
     padding: 0;
+    transition: all 0.3s ease;
+}
+
+.icon-btn-small svg {
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .icon-btn-small:hover {
-    color: var(--gold-medium);
-    background: rgba(212, 175, 55, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 
+        0 6px 15px rgba(0, 0, 0, 0.4),
+        0 0 10px rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.5);
 }
+
 
 .target-price-container {
     justify-self: end;
