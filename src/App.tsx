@@ -1,5 +1,11 @@
-import { useEffect, useState } from 'react';
-import { Cog6ToothIcon, BoltIcon, BoltSlashIcon } from '@heroicons/react/24/outline';
+import { useEffect, useState, useRef, useCallback } from 'react';
+
+
+import {
+    Cog6ToothIcon, BoltIcon, BoltSlashIcon, BellIcon, BellSlashIcon, BellAlertIcon
+} from '@heroicons/react/24/outline';
+
+
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
 import type { StockQuote } from './types';
@@ -32,6 +38,79 @@ function App () {
     const [timezone, setTimezone,] = useState<string>('Local');
     const [isTeslaMode, setIsTeslaMode,] = useState<boolean>(false);
     const [resetKey, setResetKey,] = useState<number>(0);
+    const [tickerMutes, setTickerMutes,] = useState<Record<string, boolean>>(() => {
+        const stored = localStorage.getItem('dashboard_ticker_mutes');
+
+        return stored ? JSON.parse(stored) : {};
+    });
+    const lastPlayedRef = useRef<Record<string, number>>({});
+    const initialCheckRef = useRef<Record<string, boolean>>({});
+
+    const playAlarm = useCallback(() => {
+        const audio = new Audio('/alarm.wav');
+
+        audio.play().catch((err) => console.error('Audio play failed', err));
+    }, []);
+
+    const checkAlarms = useCallback((quotesToCheck: StockQuote[]) => {
+        quotesToCheck.forEach((quote) => {
+            const isMuted = tickerMutes[quote.symbol] || false;
+
+            if (isMuted) { return; }
+
+            const saved = localStorage.getItem(`dashboard_target_${quote.symbol}`);
+
+            if (!saved) { return; }
+
+            const target = Number(saved);
+
+            if (isNaN(target)) { return; }
+
+            const lastTarget = lastPlayedRef.current[`${quote.symbol}_target`] || 0;
+
+            if (lastTarget !== target) {
+                initialCheckRef.current[quote.symbol] = false;
+                lastPlayedRef.current[`${quote.symbol}_target`] = target;
+            }
+
+            const lastLevelAlerted = lastPlayedRef.current[`${quote.symbol}_alerted_level`] || 0;
+            const hasInitialChecked = initialCheckRef.current[quote.symbol];
+
+            const prices = quote.chart && quote.chart.length > 0 ? quote.chart.map((p) => p.close) : [];
+            const currentPrice = quote.regularMarketPrice;
+            const allPrices = [...prices, currentPrice,];
+            const dayMin = Math.min(...allPrices);
+            const dayMax = Math.max(...allPrices);
+
+            const isReached = target >= dayMin && target <= dayMax;
+
+            if (isReached && lastLevelAlerted !== target) {
+                playAlarm();
+                lastPlayedRef.current[`${quote.symbol}_alerted_level`] = target;
+                initialCheckRef.current[quote.symbol] = true;
+            } else if (!hasInitialChecked) {
+                initialCheckRef.current[quote.symbol] = true;
+            }
+        });
+    }, [tickerMutes, playAlarm,]);
+
+    const handleTargetUpdate = (symbol: string, isNew: boolean) => {
+        if (isNew) {
+            setTickerMutes((prev) => {
+                if (!prev[symbol]) { return prev; }
+                const next = { ...prev, [symbol]: false, };
+
+                localStorage.setItem('dashboard_ticker_mutes', JSON.stringify(next));
+                return next;
+            });
+        }
+
+
+        if (quotes.length > 0) {
+            checkAlarms(quotes);
+        }
+    };
+
 
     // Keyboard shortcut for Tesla Mode
     useEffect(() => {
@@ -93,6 +172,7 @@ function App () {
 
                     setQuotes(results);
                     setLastUpdated(new Date());
+                    checkAlarms(results);
                 }
             } catch (error) {
                 console.error('Failed to fetch quotes:', error);
@@ -113,9 +193,31 @@ function App () {
         }, refreshRate * 1000);
 
         return () => clearInterval(interval);
-    }, [tickers, refreshRate, timezone,]);
+    }, [tickers, refreshRate, timezone, checkAlarms,]);
+
+    const handleMuteToggle = (symbol: string) => {
+
+        setTickerMutes((prev) => {
+            const next = { ...prev, [symbol]: !prev[symbol], };
+
+            localStorage.setItem('dashboard_ticker_mutes', JSON.stringify(next));
+            return next;
+        });
+    };
+
+    const handleGlobalMuteToggle = () => {
+        const anyUnmuted = tickers.some((t) => !tickerMutes[t]);
+        const next: Record<string, boolean> = {};
+
+        tickers.forEach((t) => {
+            next[t] = anyUnmuted;
+        });
+        setTickerMutes(next);
+        localStorage.setItem('dashboard_ticker_mutes', JSON.stringify(next));
+    };
 
     const handleSaveSettings = (
+
         newTickers: string[],
         newRate: number,
         newTimezone: string
@@ -253,8 +355,13 @@ function App () {
                         chart={quote.chart}
                         onRemove={() => handleRemoveTicker(quote.symbol)}
                         timezone={timezone}
+                        isMuted={tickerMutes[quote.symbol] || false}
+                        onMuteToggle={() => handleMuteToggle(quote.symbol)}
+                        onTargetUpdate={(isNew) => handleTargetUpdate(quote.symbol, isNew)}
                     />
                 )}
+
+
                 {quotes.length === 0 && !isLoading &&
                     <div className="empty-state">
                         <h3>No Tickers</h3>
@@ -267,6 +374,7 @@ function App () {
                         >
                             Open Settings
                         </button>
+
                     </div>
                 }
             </div>
@@ -280,7 +388,7 @@ function App () {
             <header className="app-header">
                 <h1 className="app-title">
                     <img
-                        src="/icon.png"
+                        src="/logo.png"
                         width={LOGO_SIZE}
                         height={LOGO_SIZE}
                         alt="Titanium Dashboard Logo"
@@ -302,12 +410,35 @@ function App () {
                     </button>
                     <button
                         className="icon-btn"
+                        onClick={handleGlobalMuteToggle}
+                        title={tickers.every((t) => tickerMutes[t]) ? 'Unmute all' : 'Mute all'}
+                        aria-label={tickers.every((t) => tickerMutes[t]) ? 'Unmute all' : 'Mute all'}
+                    >
+                        {(() => {
+                            if (tickers.every((t) => tickerMutes[t])) {
+                                return <BellAlertIcon className="header-icon" />;
+                            }
+                            const hasActiveTargets = tickers.some(
+                                (t) => !tickerMutes[t] && localStorage.getItem(`dashboard_target_${t}`)
+                            );
+
+                            if (hasActiveTargets) {
+                                return <BellSlashIcon className="header-icon" />;
+                            }
+                            return <BellIcon className="header-icon" />;
+                        })()}
+
+                    </button>
+
+                    <button
+                        className="icon-btn"
                         onClick={() => setIsSettingsOpen(true)}
                         title="Open settings"
                         aria-label="Open settings"
                     >
                         <Cog6ToothIcon className="header-icon" />
                     </button>
+
                 </div>
             </header>
 

@@ -1,6 +1,9 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { ArrowUpIcon, ArrowDownIcon, TrashIcon, BellIcon, CheckIcon } from '@heroicons/react/24/outline';
+import {
+    ArrowUpIcon, ArrowDownIcon, TrashIcon, BellIcon, CheckIcon, BellAlertIcon, BellSlashIcon
+} from '@heroicons/react/24/outline';
+
 
 import type { ChartDataPoint, HistoricalCharts } from '../types';
 
@@ -13,7 +16,11 @@ interface StockCardProps {
     chart?: ChartDataPoint[];
     onRemove: () => void;
     timezone?: string;
+    isMuted: boolean;
+    onMuteToggle: () => void;
+    onTargetUpdate?: (isNew: boolean) => void;
 }
+
 
 const DEFAULT_SPARKLINE_WIDTH = 80;
 const DEFAULT_SPARKLINE_HEIGHT = 30;
@@ -177,16 +184,34 @@ function CardFront (props: StockCardProps & {
     isEditingTarget: boolean;
     setIsEditingTarget: (v: boolean) => void;
     onTargetChange: (v: string) => void;
+    isMuted: boolean;
+    onMuteToggle: () => void;
 }) {
+
     const {
         symbol, price, change, changePercent, name, chart, onRemove,
         targetPrice, isEditingTarget, setIsEditingTarget, onTargetChange,
+        isMuted, onMuteToggle,
     } = props;
+
     const isPositive = change >= 0;
 
 
     const CHART_WIDTH = 240;
     const CHART_HEIGHT = 75;
+
+    const bellActionLabel = isMuted ? 'Unmute' : 'Mute';
+    const bellTitle = targetPrice === null ? 'Set target price' : bellActionLabel;
+
+    const handleBellClick = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (targetPrice === null) {
+            setIsEditingTarget(true);
+        } else {
+            onMuteToggle();
+        }
+    };
+
 
     return (
         <div className="card-front">
@@ -284,13 +309,22 @@ function CardFront (props: StockCardProps & {
                                 </span>
                             }
                             <button
-                                className="icon-btn-small"
-                                onClick={() => setIsEditingTarget(true)}
-                                title="Set target price"
-                                aria-label="Set target price"
+                                className={`icon-btn-small ${targetPrice === null ? 'icon-grey' : ''}`}
+                                onClick={handleBellClick}
+                                title={bellTitle}
+                                aria-label={bellTitle}
                             >
-                                <BellIcon className="icon-inline" />
+                                {(() => {
+                                    if (targetPrice === null) {
+                                        return <BellIcon className="icon-inline" />;
+                                    }
+                                    return isMuted ?
+                                        <BellAlertIcon className="icon-inline" /> :
+                                        <BellSlashIcon className="icon-inline" />;
+                                })()}
                             </button>
+
+
                         </div>
                     }
                 </div>
@@ -434,11 +468,14 @@ export function StockCard (props: StockCardProps) {
             localStorage.removeItem(`dashboard_target_${symbol}`);
         } else {
             const num = Number(val);
+            const isNew = targetPrice === null;
 
             setTargetPrice(num);
             localStorage.setItem(`dashboard_target_${symbol}`, num.toString());
+            if (props.onTargetUpdate) { props.onTargetUpdate(isNew); }
         }
     };
+
 
     const handleFlip = async () => {
         setIsFlipped(!isFlipped);
