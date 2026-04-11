@@ -212,7 +212,8 @@ export default [
             'space-infix-ops': 'error',
             'space-unary-ops': 'error',
             'spaced-comment': ['error', 'always', {
-                'exceptions': ['-', '+', '!']
+                'exceptions': ['-', '+', '!'],
+                'markers': ['/']
             }],
             'wrap-regex': 'error',
 
