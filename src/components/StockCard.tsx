@@ -117,10 +117,10 @@ function Sparkline ({
                         strokeWidth="1"
                     />
                     <text x="-4" y="4" fill="var(--text-muted)" fontSize="8" textAnchor="end">
-                        ${max.toFixed(1)}
+                        ${max.toFixed(2)}
                     </text>
                     <text x="-4" y={height} fill="var(--text-muted)" fontSize="8" textAnchor="end">
-                        ${min.toFixed(1)}
+                        ${min.toFixed(2)}
                     </text>
                     <text x="0" y={height + 10} fill="var(--text-muted)" fontSize="8" textAnchor="start">
                         {formatDate(data[0].date)}
@@ -164,13 +164,19 @@ function Sparkline ({
                         y1={targetY}
                         x2={width}
                         y2={targetY}
-                        stroke="var(--gold-medium, #d4af37)"
+                        stroke="var(--gold-deep-medium, #b8860b)"
                         strokeWidth="1"
                         strokeDasharray="4 4"
                     />
                     {showAxes && hasTarget &&
-                        <text x="-4" y={targetY + 3} fill="var(--gold-medium, #d4af37)" fontSize="8" textAnchor="end">
-                            ${targetPrice?.toFixed(1)}
+                        <text
+                            x="-4"
+                            y={targetY + 3}
+                            fill="var(--gold-deep-medium, #b8860b)"
+                            fontSize="8"
+                            textAnchor="end"
+                        >
+                            ${targetPrice?.toFixed(2)}
                         </text>
                     }
                 </>
@@ -278,6 +284,7 @@ function CardFront (props: StockCardProps & {
                                 className="icon-btn target-action-btn"
                                 title="Save target price"
                                 aria-label="Save target price"
+                                onMouseDown={(e) => e.preventDefault()}
                             >
                                 <CheckIcon />
                             </button>
@@ -304,7 +311,7 @@ function CardFront (props: StockCardProps & {
                                 >
                                     $
                                     <span className="target-price-value">
-                                        {targetPrice}
+                                        {targetPrice?.toFixed(2)}
                                     </span>
                                 </span>
                             }
