@@ -12,7 +12,11 @@
     --border-color: rgba(255, 255, 255, 0.08);
     --border-radius: 16px;
     --border-radius-sm: 8px;
-    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
     /* Metallic Gold Gradient */
     --gold-light: #fbf2c4;
@@ -22,6 +26,15 @@
             var(--gold-light) 0%,
             var(--gold-medium) 45%,
             var(--gold-dark) 100%);
+
+    /* Deep Gold Gradient for tickers and prices */
+    --gold-deep-light: #e5c158;
+    --gold-deep-medium: #c59b2a;
+    --gold-deep-dark: #9f7e02;
+    --gold-deep-gradient: linear-gradient(135deg,
+            var(--gold-deep-light) 0%,
+            var(--gold-deep-medium) 45%,
+            var(--gold-deep-dark) 100%);
 }
 
 * {
@@ -96,15 +109,17 @@ button {
 }
 
 .metallic-gold {
-    background: var(--gold-gradient);
+    background: var(--gold-deep-gradient);
     -webkit-background-clip: text;
     -webkit-background-clip: padding-box;
     /* Fix for some browsers */
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    color: var(--gold-medium);
+    color: var(--gold-deep-medium);
     /* Fallback */
     display: inline-block;
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
 }
 
 /* Specific fix for SVG icons to inherit gradient */
@@ -115,7 +130,7 @@ button {
 
 .icon-btn {
     background: var(--bg-secondary);
-    color: var(--gold-medium);
+    color: var(--gold-deep-medium);
     border: 1px solid var(--border-color);
     padding: 0.5rem;
     border-radius: 50%;
@@ -171,7 +186,7 @@ button {
     -webkit-background-clip: text !important;
     background-clip: text !important;
     -webkit-text-fill-color: transparent !important;
-    color: var(--gold-medium) !important;
+    color: var(--gold-deep-medium) !important;
 }
 
 .icon-grey {
@@ -184,7 +199,7 @@ button {
 }
 
 .icon-btn-active-border {
-    border-color: var(--gold-medium) !important;
+    border-color: var(--gold-deep-medium) !important;
     box-shadow: 0 0 8px rgba(212, 175, 55, 0.2);
 }
 
@@ -235,6 +250,7 @@ button {
     perspective: 1200px;
     cursor: pointer;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 }
 
 .stock-card:hover {
@@ -255,9 +271,6 @@ button {
 
 .card-front,
 .card-back {
-    background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius);
     padding: 1.5rem;
@@ -270,6 +283,25 @@ button {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     overflow: hidden;
+    transform: translate3d(0, 0, 0);
+    will-change: box-shadow, border-color;
+    isolation: isolate;
+}
+
+.card-front::after,
+.card-back::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg-card);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: -1;
+    pointer-events: none;
+    border-radius: inherit;
 }
 
 .card-front {
@@ -330,6 +362,7 @@ button {
     font-weight: 700;
     min-width: max-content;
     white-space: nowrap;
+    will-change: transform;
 }
 
 .stock-name {
@@ -347,6 +380,7 @@ button {
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
+    will-change: transform;
 }
 
 .stock-change {
@@ -466,7 +500,7 @@ select {
 input:focus,
 select:focus {
     outline: none;
-    border-color: var(--gold-medium);
+    border-color: var(--gold-deep-medium);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
 }
 
@@ -608,6 +642,7 @@ select:focus {
 
 .sparkline-svg {
     overflow: visible;
+    will-change: transform;
 }
 
 .sparkline-path {
@@ -778,7 +813,7 @@ select:focus {
     justify-content: center;
     align-items: center;
     z-index: 10;
-    /* Removed preserve-3d so all 8 child rays are flattened ON TOP of background */
+    overflow: hidden;
 }
 
 .tesla-sphere::after {
@@ -825,28 +860,31 @@ select:focus {
     /* Thick lightning base */
     border-radius: 50% 50% 0 0;
     /* Middle 80% bends naturally via animations below */
-    filter: url(#lightning-wobble) drop-shadow(0 0 3px #fff) drop-shadow(0 0 10px #fde047);
-    /* Implements thick jagged lightning */
+    filter: url(#lightning-wobble) drop-shadow(0 0 8px #fde047);
     z-index: 5;
     pointer-events: none;
     opacity: 0;
-    /* Starts hidden */
+    will-change: transform, opacity;
+    backface-visibility: hidden;
 }
 
 /* Gracefully dissipating point contact spot */
 .plasma-ray::after {
     content: '';
     position: absolute;
-    top: -24px;
-    /* Extends vertically to give space for displacement */
-    right: -20px;
-    /* Sits precisely on the wall */
-    width: 48px;
-    height: 48px;
-    background: radial-gradient(circle, #fff 10%, rgba(253, 224, 71, 0.9) 25%, transparent 65%);
+    width: 60px;
+    height: 60px;
+    top: -30px;
+    right: -30px;
+    background:
+        radial-gradient(circle at 50% 50%, #fff 0%, rgba(253, 224, 71, 0.8) 20%, transparent 60%),
+        radial-gradient(circle at 30% 30%, rgba(253, 224, 71, 0.4) 0%, transparent 50%),
+        radial-gradient(circle at 70% 70%, rgba(253, 224, 71, 0.4) 0%, transparent 50%);
     border-radius: 50%;
-    transform: scaleX(0.3) scaleY(1.5);
-    /* Distorts and flattens against the curved inner glass perspective */
+    transform: scaleX(0.4) scaleY(1.2);
+    opacity: 0.8;
+    filter: blur(2px);
+    /* Soften for cloudiness */
 }
 
 .ray-1 {
@@ -1241,7 +1279,7 @@ select:focus {
 
 .icon-btn-small {
     background: var(--bg-secondary);
-    color: var(--gold-medium);
+    color: var(--gold-deep-medium);
     border: 1px solid var(--border-color);
     border-radius: 50%;
     display: flex;
@@ -1254,7 +1292,7 @@ select:focus {
 }
 
 .icon-btn-small svg {
-    background: var(--gold-gradient);
+    background: var(--gold-deep-gradient);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -1281,12 +1319,12 @@ select:focus {
 
 .target-price-text {
     font-size: 0.875rem;
-    color: var(--gold-medium);
+    color: var(--gold-deep-medium);
     cursor: pointer;
 }
 
 .target-price-value {
-    border-bottom: 1px dashed var(--gold-medium);
+    border-bottom: 1px dashed var(--gold-deep-medium);
 }
 
 .target-price-form {
@@ -1300,6 +1338,12 @@ select:focus {
     height: 28px;
     padding: 0;
     flex-shrink: 0;
+}
+
+.target-action-btn svg {
+    background: var(--gold-deep-gradient) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
 }
 
 .icon-inline {
@@ -1326,18 +1370,24 @@ select:focus {
 }
 
 .target-input {
-    width: 80px;
+    width: 90px;
     padding: 2px 6px;
-    font-size: 12px;
+    font-size: 0.875rem;
     font-weight: bold;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--bg-primary);
-    color: var(--gold-medium);
+    color: var(--gold-deep-medium) !important;
+    caret-color: var(--gold-deep-medium);
+}
+
+.target-input::placeholder {
+    color: var(--gold-deep-medium);
+    opacity: 0.6;
 }
 
 .target-input:focus {
     outline: none;
-    border-color: var(--gold-medium);
+    border-color: var(--gold-deep-medium);
     box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }
