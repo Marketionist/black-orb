@@ -1,22 +1,18 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-
-
 import {
     Cog6ToothIcon, BoltIcon, BoltSlashIcon, BellIcon, BellSlashIcon, BellAlertIcon
 } from '@heroicons/react/24/outline';
-
-
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
 import type { StockQuote } from './types';
 
 const getDefaultTickers = (): string[] => {
-    interface ImportMetaWithEnv extends ImportMeta {
+    interface ImportMetaWithEnv {
         env: {
             STOCKS?: string;
         };
     }
-    const envTickers = (import.meta as ImportMetaWithEnv).env.STOCKS;
+    const envTickers = (import.meta as unknown as ImportMetaWithEnv).env.STOCKS;
 
     if (envTickers && typeof envTickers === 'string') {
         return envTickers
@@ -24,7 +20,7 @@ const getDefaultTickers = (): string[] => {
             .map((s) => s.trim())
             .filter(Boolean);
     }
-    return ['VOO', 'VGT', 'IBIT', 'IAUM', 'USDCAD=X',];
+    return ['VOO', 'VGT', 'IBIT', 'IAUM', 'CAD=X',];
 };
 
 function App () {
@@ -71,6 +67,7 @@ function App () {
             if (lastTarget !== target) {
                 initialCheckRef.current[quote.symbol] = false;
                 lastPlayedRef.current[`${quote.symbol}_target`] = target;
+                delete lastPlayedRef.current[`${quote.symbol}_alerted_level`];
             }
 
             const lastLevelAlerted = lastPlayedRef.current[`${quote.symbol}_alerted_level`] || 0;
@@ -104,7 +101,6 @@ function App () {
                 return next;
             });
         }
-
 
         if (quotes.length > 0) {
             checkAlarms(quotes);
@@ -267,16 +263,9 @@ function App () {
                     <feTurbulence
                         type="fractalNoise"
                         baseFrequency="0.04"
-                        numOctaves="3"
+                        numOctaves="2"
                         result="noise"
-                    >
-                        <animate
-                            attributeName="baseFrequency"
-                            values="0.04 0.04; 0.05 0.05; 0.04 0.04"
-                            dur="2s"
-                            repeatCount="indefinite"
-                        />
-                    </feTurbulence>
+                    />
                     <feDisplacementMap
                         in="SourceGraphic"
                         in2="noise"
@@ -360,7 +349,6 @@ function App () {
                         onTargetUpdate={(isNew) => handleTargetUpdate(quote.symbol, isNew)}
                     />
                 )}
-
 
                 {quotes.length === 0 && !isLoading &&
                     <div className="empty-state">
