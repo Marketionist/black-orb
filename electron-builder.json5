@@ -4,6 +4,7 @@
   appId: "com.marketionist.titaniumdashboard",
   asar: true,
   productName: "Titanium-Dashboard",
+  icon: "public/logo.png",
   directories: {
     output: "release/${version}",
   },
