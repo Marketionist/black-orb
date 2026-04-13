@@ -43,7 +43,7 @@ function App () {
     const initialCheckRef = useRef<Record<string, boolean>>({});
 
     const playAlarm = useCallback(() => {
-        const audio = new Audio('/alarm.wav');
+        const audio = new Audio('./alarm.wav');
 
         audio.play().catch((err) => console.error('Audio play failed', err));
     }, []);
@@ -376,7 +376,7 @@ function App () {
             <header className="app-header">
                 <h1 className="app-title">
                     <img
-                        src="/logo.png"
+                        src="./logo.png"
                         width={LOGO_SIZE}
                         height={LOGO_SIZE}
                         alt="Titanium Dashboard Logo"
