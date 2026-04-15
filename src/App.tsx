@@ -23,7 +23,7 @@ const getDefaultTickers = (): string[] => {
     return ['VOO', 'VGT', 'IBIT', 'IAUM', 'CAD=X',];
 };
 
-function App() {
+function App () {
     const [tickers, setTickers,] = useState<string[]>([]);
     const [refreshRate, setRefreshRate,] = useState<number>(10);
     const [quotes, setQuotes,] = useState<StockQuote[]>([]);
