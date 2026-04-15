@@ -1,20 +1,22 @@
 {
-  "name": "titanium-dashboard",
+  "name": "black-orb",
   "version": "1.0.0",
-  "description": "Titanium Dashboard is a modern, cross-platform stock tracking dashboard",
+  "description": "Black Orb is a modern, cross-platform stock tracking dashboard",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Marketionist/titanium-dashboard"
+    "url": "https://github.com/Marketionist/black-orb"
   },
   "keywords": [
-    "titanium dashboard",
-    "titanium-dashboard",
-    "Titanium Dashboard",
-    "Titanium-Dashboard"
+    "black-orb",
+    "black orb",
+    "Black-Orb",
+    "Black Orb",
+    "Black Orb dashboard",
+    "black orb dashboard"
   ],
   "author": "Dmytro Shpakovskyi",
   "license": "MIT",

@@ -1,9 +1,9 @@
 // @see - https://www.electron.build/configuration/configuration
 {
   $schema: "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
-  appId: "com.marketionist.titaniumdashboard",
+  appId: "com.marketionist.blackorb",
   asar: true,
-  productName: "Titanium-Dashboard",
+  productName: "Black Orb",
   icon: "public/logo.png",
   directories: {
     output: "release/${version}",
