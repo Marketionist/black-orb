@@ -379,10 +379,9 @@ function App () {
                         src="./logo.png"
                         width={LOGO_SIZE}
                         height={LOGO_SIZE}
-                        alt="Titanium Dashboard Logo"
+                        alt="Black Orb logo"
                         className="app-logo"
                     />
-                    Titanium Dashboard
                 </h1>
                 <div className="header-actions">
                     <button
