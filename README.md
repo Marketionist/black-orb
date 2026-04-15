@@ -1,10 +1,10 @@
-# Titanium Dashboard
+# Black Orb
 
-Titanium Dashboard is a modern, cross-platform stock tracking dashboard. Built
-using Electron, React, and TypeScript, it offers a beautifully
-designed interface with glassmorphism and a premium dark mode aesthetic.
-Real-time stock data is seamlessly fetched using the Yahoo Finance API via IPC to
-bypass browser CORS constraints, providing accurate, reliable market data.
+Black Orb is a modern, clean and anonymous stock price tracking dashboard. Built
+using Electron, React, and TypeScript, it offers a beautifully designed
+interface with glassmorphism and a premium dark mode aesthetic. Real-time stock
+data is seamlessly fetched using the Yahoo Finance API via IPC to bypass browser
+CORS constraints, providing accurate, reliable market data.
 
 ## Features
 
