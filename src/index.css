@@ -204,7 +204,7 @@ button {
 }
 
 .btn-primary {
-
+    background: var(--gold-gradient);
     color: #1a1a1a;
     /* Dark text for contrast against gold */
     padding: 0.6rem 1.2rem;
@@ -630,10 +630,16 @@ select:focus {
     }
 }
 
-/* --- Refactor: Inline Styles to Classes --- */
-
 .app-logo {
-    border-radius: 6px;
+    border-radius: 50%;
+    height: 40px;
+    width: 40px;
+    transition: box-shadow 0.3s ease-in-out, background-color 0.3s ease-in-out;
+}
+
+.logo-tesla-glow {
+    box-shadow: 0 0 4px 1px rgba(212, 175, 55, 0.7), inset 0 0 4px 1px rgba(212, 175, 55, 0.7);
+    background-color: transparent;
 }
 
 .btn-centered {
@@ -850,73 +856,80 @@ select:focus {
     left: 50%;
     width: 50%;
     /* Radiates from center to edge */
-    height: 60px;
-    /* some height for wavy top border */
-    margin-top: -30px;
-    /* center it */
+    height: 4px;
+    /* Straight line */
+    margin-top: -2px;
+    /* Center it */
     transform-origin: 0% 50%;
-    /* pivot perfectly at center */
-    border-top: 6px solid #fff;
+    /* Pivot perfectly at center */
+    border-top: 4px solid #fff;
     /* Thick lightning base */
-    border-radius: 50% 50% 0 0;
-    /* Middle 80% bends naturally via animations below */
-    filter: url(#lightning-wobble) drop-shadow(0 0 8px #fde047);
+    border-radius: 0;
+    /* Straight, no natural curves! Filter bends it organically */
     z-index: 5;
     pointer-events: none;
     opacity: 0;
     will-change: transform, opacity;
     backface-visibility: hidden;
+    transform: translateZ(0);
 }
 
 /* Gracefully dissipating point contact spot */
 .plasma-ray::after {
     content: '';
     position: absolute;
-    width: 60px;
-    height: 60px;
-    top: -30px;
-    right: -30px;
+    width: 40px;
+    height: 40px;
+    top: -18px;
+    right: -20px;
     background:
-        radial-gradient(circle at 50% 50%, #fff 0%, rgba(253, 224, 71, 0.8) 20%, transparent 60%),
-        radial-gradient(circle at 30% 30%, rgba(253, 224, 71, 0.4) 0%, transparent 50%),
-        radial-gradient(circle at 70% 70%, rgba(253, 224, 71, 0.4) 0%, transparent 50%);
+        radial-gradient(circle at 50% 50%, #fff 0%, rgba(253, 224, 71, 0.8) 15%, transparent 50%),
+        radial-gradient(circle at 30% 30%, rgba(253, 224, 71, 0.4) 0%, transparent 40%),
+        radial-gradient(circle at 70% 70%, rgba(253, 224, 71, 0.4) 0%, transparent 40%);
     border-radius: 50%;
     transform: scaleX(0.4) scaleY(1.2);
     opacity: 0.8;
-    filter: blur(2px);
-    /* Soften for cloudiness */
+    /* Blur baked into gradients to bypass heavy spinning-compositor costs */
 }
 
 .ray-1 {
-    animation: plasma-strike-1 7s ease-in-out infinite, bend-twist-1 3.2s infinite alternate ease-in-out;
+    animation: plasma-strike-1 7s ease-in-out infinite;
+    filter: url(#lightning-wobble-1) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-2 {
-    animation: plasma-strike-2 8.5s ease-in-out infinite, bend-twist-2 4.1s infinite alternate ease-in-out;
+    animation: plasma-strike-2 8.5s ease-in-out infinite;
+    filter: url(#lightning-wobble-2) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-3 {
-    animation: plasma-strike-3 6.8s ease-in-out infinite, bend-twist-3 3.5s infinite alternate ease-in-out;
+    animation: plasma-strike-3 6.8s ease-in-out infinite;
+    filter: url(#lightning-wobble-3) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-4 {
-    animation: plasma-strike-4 9.2s ease-in-out infinite, bend-twist-4 4.5s infinite alternate ease-in-out;
+    animation: plasma-strike-4 9.2s ease-in-out infinite;
+    filter: url(#lightning-wobble-4) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-5 {
-    animation: plasma-strike-5 7.5s ease-in-out infinite, bend-twist-5 3.8s infinite alternate ease-in-out;
+    animation: plasma-strike-5 7.5s ease-in-out infinite;
+    filter: url(#lightning-wobble-5) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-6 {
-    animation: plasma-strike-6 8.8s ease-in-out infinite, bend-twist-6 4.7s infinite alternate ease-in-out;
+    animation: plasma-strike-6 8.8s ease-in-out infinite;
+    filter: url(#lightning-wobble-6) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-7 {
-    animation: plasma-strike-7 9.5s ease-in-out infinite, bend-twist-7 5.2s infinite alternate ease-in-out;
+    animation: plasma-strike-7 9.5s ease-in-out infinite;
+    filter: url(#lightning-wobble-7) drop-shadow(0 0 8px #fde047);
 }
 
 .ray-8 {
-    animation: plasma-strike-8 7.2s ease-in-out infinite, bend-twist-8 3.9s infinite alternate ease-in-out;
+    animation: plasma-strike-8 7.2s ease-in-out infinite;
+    filter: url(#lightning-wobble-8) drop-shadow(0 0 8px #fde047);
 }
 
 /* Constantly visible and gently dissolving transitions */
@@ -1133,135 +1146,6 @@ select:focus {
     100% {
         transform: rotate3d(-0.5, -1, -0.5, 230deg) rotateZ(480deg) scaleX(0.1);
         opacity: 0;
-    }
-}
-
-/* Bend and Twist Animations for wavy arcs */
-@keyframes bend-twist-1 {
-    0% {
-        border-radius: 50% 50% 0 0;
-    }
-
-    50% {
-        border-radius: 20% 80% 0 0;
-        height: 40px;
-    }
-
-    100% {
-        border-radius: 80% 20% 0 0;
-        height: 80px;
-    }
-}
-
-@keyframes bend-twist-2 {
-    0% {
-        border-radius: 40% 60% 0 0;
-    }
-
-    50% {
-        border-radius: 70% 30% 0 0;
-        height: 70px;
-    }
-
-    100% {
-        border-radius: 30% 70% 0 0;
-        height: 50px;
-    }
-}
-
-@keyframes bend-twist-3 {
-    0% {
-        border-radius: 60% 40% 0 0;
-    }
-
-    50% {
-        border-radius: 25% 75% 0 0;
-        height: 45px;
-    }
-
-    100% {
-        border-radius: 85% 15% 0 0;
-        height: 85px;
-    }
-}
-
-@keyframes bend-twist-4 {
-    0% {
-        border-radius: 45% 55% 0 0;
-    }
-
-    50% {
-        border-radius: 75% 25% 0 0;
-        height: 80px;
-    }
-
-    100% {
-        border-radius: 15% 85% 0 0;
-        height: 35px;
-    }
-}
-
-@keyframes bend-twist-5 {
-    0% {
-        border-radius: 55% 45% 0 0;
-    }
-
-    50% {
-        border-radius: 20% 80% 0 0;
-        height: 50px;
-    }
-
-    100% {
-        border-radius: 80% 20% 0 0;
-        height: 75px;
-    }
-}
-
-@keyframes bend-twist-6 {
-    0% {
-        border-radius: 35% 65% 0 0;
-    }
-
-    50% {
-        border-radius: 65% 35% 0 0;
-        height: 70px;
-    }
-
-    100% {
-        border-radius: 25% 75% 0 0;
-        height: 40px;
-    }
-}
-
-@keyframes bend-twist-7 {
-    0% {
-        border-radius: 75% 25% 0 0;
-    }
-
-    50% {
-        border-radius: 30% 70% 0 0;
-        height: 35px;
-    }
-
-    100% {
-        border-radius: 85% 15% 0 0;
-        height: 85px;
-    }
-}
-
-@keyframes bend-twist-8 {
-    0% {
-        border-radius: 25% 75% 0 0;
-    }
-
-    50% {
-        border-radius: 80% 20% 0 0;
-        height: 85px;
-    }
-
-    100% {
-        border-radius: 40% 60% 0 0;
-        height: 45px;
     }
 }
 

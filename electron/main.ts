@@ -1,8 +1,9 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import yf from './yahoo-finance';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { exec } from 'node:child_process';
 import type { StockQuote, ChartDataPoint, ChartOptions, HistoricalCharts } from '../src/types';
 
 globalThis.require = createRequire(import.meta.url);
@@ -269,6 +270,22 @@ app.whenReady().then(() => {
             }
         }
     );
+
+    ipcMain.handle('play-alarm', () => {
+        const alarmPath = path.join(process.env.VITE_PUBLIC || '', 'alarm.wav');
+
+        if (process.platform === 'darwin') {
+            exec(`afplay "${alarmPath}"`);
+        } else if (process.platform === 'win32') {
+            exec(`powershell -c (New-Object Media.SoundPlayer '${alarmPath}').PlaySync()`);
+        } else {
+            exec(`aplay "${alarmPath}"`).on('error', () => {
+                exec(`paplay "${alarmPath}"`).on('error', () => {
+                    shell.beep();
+                });
+            });
+        }
+    });
 
     ipcMain.handle('get-historical-charts', async (_event, symbol: string) => {
         try {
