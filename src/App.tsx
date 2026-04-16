@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
-    Cog6ToothIcon, BoltIcon, BoltSlashIcon, BellIcon, BellSlashIcon, BellAlertIcon
+    Cog6ToothIcon, BellIcon, BellSlashIcon, BellAlertIcon
 } from '@heroicons/react/24/outline';
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
@@ -43,9 +43,12 @@ function App () {
     const initialCheckRef = useRef<Record<string, boolean>>({});
 
     const playAlarm = useCallback(() => {
-        const audio = new Audio('./alarm.wav');
+        type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<void>;
+        const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
 
-        audio.play().catch((err) => console.error('Audio play failed', err));
+        if (winWithIpc.ipcRenderer && winWithIpc.ipcRenderer.invoke) {
+            winWithIpc.ipcRenderer.invoke('play-alarm').catch((err) => console.error('Audio play failed', err));
+        }
     }, []);
 
     const checkAlarms = useCallback((quotesToCheck: StockQuote[]) => {
@@ -259,21 +262,57 @@ function App () {
     const renderTeslaMode = () =>
         <div className="tesla-mode-container">
             <svg width="0" height="0" className="hidden-svg-defs">
-                <filter id="lightning-wobble">
-                    <feTurbulence
-                        type="fractalNoise"
-                        baseFrequency="0.04"
-                        numOctaves="2"
-                        result="noise"
-                    />
-                    <feDisplacementMap
-                        in="SourceGraphic"
-                        in2="noise"
-                        scale="35"
-                        xChannelSelector="R"
-                        yChannelSelector="G"
-                    />
-                </filter>
+                {[1, 2, 3, 4, 5, 6, 7, 8,].map((i) => {
+                    const patterns = [
+                        '0.01;0.02;0.015;0.025;0.01',
+                        '0.03;0.015;0.035;0.02;0.03',
+                        '0.015;0.035;0.01;0.03;0.015',
+                        '0.02;0.01;0.04;0.015;0.02',
+                        '0.01;0.03;0.02;0.04;0.01',
+                        '0.035;0.015;0.03;0.01;0.035',
+                        '0.015;0.04;0.015;0.03;0.015',
+                        '0.03;0.01;0.02;0.04;0.03',
+                    ];
+                    const seedMultiplier = 42;
+                    const baseDuration = 7.5;
+                    const durationMultiplier = 2.5;
+                    const baseScale = 12;
+                    const scaleMultiplier = 1.5;
+
+                    return (
+                        <filter
+                            id={`lightning-wobble-${i}`}
+                            key={i}
+                            x="-10%"
+                            y="-50%"
+                            width="120%"
+                            height="200%"
+                            colorInterpolationFilters="sRGB"
+                        >
+                            <feTurbulence
+                                type="fractalNoise"
+                                baseFrequency="0.02"
+                                numOctaves="2"
+                                seed={i * seedMultiplier}
+                                result="noise"
+                            >
+                                <animate
+                                    attributeName="baseFrequency"
+                                    values={patterns[i - 1]}
+                                    dur={`${baseDuration + i * durationMultiplier}s`}
+                                    repeatCount="indefinite"
+                                />
+                            </feTurbulence>
+                            <feDisplacementMap
+                                in="SourceGraphic"
+                                in2="noise"
+                                scale={baseScale + i * scaleMultiplier}
+                                xChannelSelector="R"
+                                yChannelSelector="G"
+                            />
+                        </filter>
+                    );
+                })}
             </svg>
             <div className="tesla-sphere">
                 <div className="tesla-core"></div>
@@ -311,7 +350,7 @@ function App () {
                 <div className="loader-container">
                     <div className="error-message">Unable to load market data</div>
                     <button
-                        className="btn-primary btn-centered btn-danger-recovery"
+                        className="btn-primary btn-centered"
                         onClick={handleResetStorage}
                         title="Reset all storage"
                         aria-label="Reset all storage"
@@ -369,32 +408,17 @@ function App () {
         );
     };
 
-    const LOGO_SIZE = 32;
-
     return (
         <>
             <header className="app-header">
-                <h1 className="app-title">
+                <h1 className="app-title" onClick={() => setIsTeslaMode(!isTeslaMode)} style={{ cursor: 'pointer', }}>
                     <img
                         src="./logo.png"
-                        width={LOGO_SIZE}
-                        height={LOGO_SIZE}
                         alt="Black Orb logo"
-                        className="app-logo"
+                        className={`app-logo ${isTeslaMode ? 'logo-tesla-glow' : ''}`}
                     />
                 </h1>
                 <div className="header-actions">
-                    <button
-                        className="icon-btn"
-                        onClick={() => setIsTeslaMode(!isTeslaMode)}
-                        title={isTeslaMode ? 'Disable tesla mode' : 'Enable tesla mode'}
-                        aria-label={isTeslaMode ? 'Disable tesla mode' : 'Enable tesla mode'}
-                    >
-                        {isTeslaMode ?
-                            <BoltSlashIcon className="header-icon" /> :
-                            <BoltIcon className="header-icon" />
-                        }
-                    </button>
                     <button
                         className="icon-btn"
                         onClick={handleGlobalMuteToggle}
