@@ -411,7 +411,7 @@ function App () {
     return (
         <>
             <header className="app-header">
-                <h1 className="app-title" onClick={() => setIsTeslaMode(!isTeslaMode)} style={{ cursor: 'pointer', }}>
+                <h1 className="app-title" onClick={() => setIsTeslaMode(!isTeslaMode)}>
                     <img
                         src="./logo.png"
                         alt="Black Orb logo"
