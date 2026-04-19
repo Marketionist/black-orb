@@ -272,7 +272,10 @@ app.whenReady().then(() => {
     );
 
     ipcMain.handle('play-alarm', () => {
-        const alarmPath = path.join(process.env.VITE_PUBLIC || '', 'alarm.wav');
+        const isDev = !!VITE_DEV_SERVER_URL;
+        const alarmPath = isDev ?
+            path.join(process.env.VITE_PUBLIC || '', 'alarm.wav') :
+            path.join(process.resourcesPath, 'alarm.wav');
 
         if (process.platform === 'darwin') {
             exec(`afplay "${alarmPath}"`);
