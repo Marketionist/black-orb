@@ -8,18 +8,19 @@ CORS constraints, providing accurate, reliable market data.
 
 ## Features
 
+- **Anonymous**: stores your settings, target prices and ticker list locally in
+localStorage on your machine without needing a database or sharing them with
+third parties.
 - **Real-time Data**: fetch the latest quotes without limits using Yahoo
 Finance.
-- **Titanium Aesthetics**: enjoy a beautifully designed, premium user interface
-with interactive "burnt titanium" highlights.
+- **Black Aesthetics**: enjoy a beautifully designed, premium user interface
+with interactive "gold on black" highlights.
 - **Cross-platform**: readily packages for both Windows and Mac using
 electron-builder.
-- **Local Persistence**: saves your settings and ticker list locally without
-needing a database.
-- **Customizable Defaults**: define default stocks through an environment
-variable.
 
-## Customizing Default Stocks
+## Development
+
+### Customizing Default Stocks
 
 You can customize the default list of stocks loaded on the first run (or when resetting storage) by using an environment variable.
 
@@ -33,18 +34,18 @@ STOCKS=AAPL,GOOGL,NVDA,AMD,INTC
 When you start (`npm run dev`) or build the app, it will read this variable and
 use those tickers as your default dashboard!
 
-## Requirements
+### Requirements
 
 - Node.js (24 or newer recommended)
 - npm (Node Package Manager)
 
-## Installation Instructions
+### Installation Instructions
 
 1. **Clone the repository** (or download and extract the project):
 
     ```bash
-    git clone git@github.com:Marketionist/titanium-dashboard.git
-    cd titanium-dashboard
+    git clone git@github.com:Marketionist/black-orb.git
+    cd black-orb
     ```
 
 2. **Install dependencies** - to install all necessary packages run the
@@ -60,13 +61,13 @@ replacement, execute:
     npm run dev
     ```
 
-## Building Instructions
+### Building Instructions
 
 The app is built using `electron-builder` which allows for generating highly
 optimized executables for different operating systems. Below are the commands
 you can use to package the app.
 
-### macOS Build
+#### macOS Build
 
 To package the application as a macOS `.dmg` installer:
 
@@ -77,7 +78,7 @@ npm run build:mac
 The compiled disk image and raw binaries will be located under the `release/`
 directory.
 
-### Windows Build
+#### Windows Build
 
 To package the application as a Windows `.exe` installer (using NSIS):
 
@@ -87,7 +88,7 @@ npm run build:win
 
 The compiled installer will be located under the `release/` directory.
 
-### General Build
+#### General Build
 
 If you want to run a complete build pipeline without a specific flag (defaults
 to your current operating system host):
@@ -96,7 +97,7 @@ to your current operating system host):
 npm run build
 ```
 
-## Technologies Used
+### Technologies Used
 
 - **Frameworks**: [Electron](https://www.electronjs.org/), [React](https://react.dev/), [Vite](https://vitejs.dev/)
 - **Languages**: TypeScript
@@ -106,4 +107,4 @@ npm run build
 
 ## Thanks
 If this app was helpful to you - please give this repository a **★ Star** on
-[GitHub](https://github.com/Marketionist/titanium-dashboard).
+[GitHub](https://github.com/Marketionist/black-orb).
