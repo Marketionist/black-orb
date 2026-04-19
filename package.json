@@ -24,9 +24,11 @@
   "license": "MIT",
   "scripts": {
     "dev": "vite",
+    "dev:web": "VITE_WEB=true vite",
     "build": "tsc && vite build && electron-builder",
     "build:mac": "tsc && vite build && electron-builder --mac",
     "build:win": "tsc && vite build && electron-builder --win",
+    "build:linux": "tsc && vite build && electron-builder --linux",
     "install:all": "npm install --legacy-peer-deps",
     "lint": "eslint .",
     "preview": "vite preview",
