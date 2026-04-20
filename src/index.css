@@ -79,12 +79,17 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.no-scroll {
+    overflow: hidden !important;
+}
+
 button {
     cursor: pointer;
     border: none;
     background: none;
     font-family: inherit;
     transition: var(--transition);
+    transform: translateZ(0);
 }
 
 .app-header {
@@ -129,6 +134,7 @@ button {
     /* The gradient is applied to the parent's background-clip */
 }
 
+
 .icon-btn {
     background: var(--bg-secondary);
     color: var(--gold-deep-medium);
@@ -142,6 +148,7 @@ button {
     width: 40px;
     position: relative;
     overflow: hidden;
+    transform: translateZ(0);
 }
 
 .icon-btn svg {
@@ -284,8 +291,7 @@ button {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     overflow: hidden;
-    transform: translate3d(0, 0, 0);
-    will-change: box-shadow, border-color;
+    transform: translateZ(0);
     isolation: isolate;
 }
 
@@ -334,13 +340,8 @@ button {
     left: 0;
     width: 100%;
     height: 4px;
-    /* Burnt golden titanium heat-anodized gradient */
-    background: linear-gradient(90deg,
-            #fde047 0%,
-            #d4af37 35%,
-            #b45309 70%,
-            #9333ea 90%,
-            #3b82f6 100%);
+    /* Golden top border gradient on hover */
+    background: var(--gold-gradient);
     opacity: 0;
     transition: var(--transition);
 }
@@ -363,7 +364,6 @@ button {
     font-weight: 700;
     min-width: max-content;
     white-space: nowrap;
-    will-change: transform;
 }
 
 .stock-name {
@@ -375,13 +375,13 @@ button {
     width: 100%;
     align-self: baseline;
     min-width: 0;
+    transform: translateZ(0);
 }
 
 .stock-price {
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
-    will-change: transform;
 }
 
 .stock-change {
@@ -391,11 +391,12 @@ button {
     font-weight: 600;
     font-size: 1rem;
     padding: 0.25rem 0.5rem;
-    border-radius: 4px;
+    border-radius: 8px;
     width: fit-content;
     flex-shrink: 0;
     white-space: nowrap;
     justify-self: end;
+    transform: translateZ(0);
 }
 
 .stock-change.positive {
@@ -471,7 +472,7 @@ select {
     width: 100%;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    color: var(--text-primary);
+    color: var(--gold-deep-medium);
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius-sm);
     font-family: inherit;
@@ -483,6 +484,11 @@ input[type="text"],
 input[type="number"] {
     appearance: none;
     -webkit-appearance: none;
+}
+
+::placeholder {
+    color: var(--text-muted);
+    opacity: 0.7;
 }
 
 select {
@@ -652,7 +658,8 @@ select:focus {
     will-change: transform;
 }
 
-.sparkline-path {
+.sparkline-path,
+.sparkline-dot {
     filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
 }
 
@@ -684,6 +691,9 @@ select:focus {
     position: absolute;
     top: 15px;
     left: 15px;
+    padding: 0.2rem 0;
+    display: flex;
+    align-items: center;
 }
 
 .card-back-subtitle {
@@ -799,16 +809,17 @@ select:focus {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 50vh;
+    height: calc(100vh - 140px);
     width: 100%;
+    overflow: hidden;
     animation: fadeIn 0.5s ease-out;
     perspective: 1000px;
 }
 
 .tesla-sphere {
     position: relative;
-    width: 400px;
-    height: 400px;
+    width: 55vmin;
+    height: 55vmin;
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, #4a4a55, #121316, #000);
     box-shadow:
@@ -837,10 +848,10 @@ select:focus {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 40px;
-    height: 40px;
-    margin-top: -20px;
-    margin-left: -20px;
+    width: 6vmin;
+    height: 6vmin;
+    margin-top: -3vmin;
+    margin-left: -3vmin;
     background: radial-gradient(circle, #fff, #fde047 40%, rgba(212, 175, 55, 0.8));
     border-radius: 50%;
     box-shadow:
@@ -879,10 +890,10 @@ select:focus {
 .plasma-ray::after {
     content: '';
     position: absolute;
-    width: 40px;
-    height: 40px;
-    top: -18px;
-    right: -20px;
+    width: 6vmin;
+    height: 6vmin;
+    top: -2.7vmin;
+    right: -3vmin;
     background:
         radial-gradient(circle at 50% 50%, #fff 0%, rgba(253, 224, 71, 0.8) 15%, transparent 50%),
         radial-gradient(circle at 30% 30%, rgba(253, 224, 71, 0.4) 0%, transparent 40%),
@@ -1174,6 +1185,7 @@ select:focus {
     width: 28px;
     padding: 0;
     transition: all 0.3s ease;
+    transform: translateZ(0);
 }
 
 .icon-btn-small svg {
@@ -1206,6 +1218,14 @@ select:focus {
     font-size: 0.875rem;
     color: var(--gold-deep-medium);
     cursor: pointer;
+    transition: var(--transition);
+    transform: translateZ(0);
+}
+
+.target-reached {
+    border: 1px solid var(--gold-deep-medium);
+    padding: 2px 4px;
+    border-radius: 8px;
 }
 
 .target-price-value {
@@ -1236,6 +1256,13 @@ select:focus {
     height: 14px;
 }
 
+.stock-change-arrow {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .icon-back-perf {
     width: 14px;
     height: 14px;
@@ -1258,7 +1285,7 @@ select:focus {
     width: 90px;
     padding: 2px 6px;
     font-size: 0.875rem;
-    font-weight: bold;
+    font-weight: normal;
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--bg-primary);
@@ -1267,8 +1294,8 @@ select:focus {
 }
 
 .target-input::placeholder {
-    color: var(--gold-deep-medium);
-    opacity: 0.6;
+    color: var(--text-muted);
+    opacity: 0.7;
 }
 
 .target-input:focus {
