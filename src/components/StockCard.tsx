@@ -140,7 +140,16 @@ function Sparkline ({
                 className="sparkline-path"
             />
             {points.map((p, i) =>
-                <circle key={`dot-${i}`} cx={p.x} cy={p.y} r="1.5" fill={color} />
+                <circle
+                    key={`dot-${i}`}
+                    cx={p.x}
+                    cy={p.y}
+                    r="2.5"
+                    fill={color}
+                    stroke="rgba(18, 19, 22, 0.8)"
+                    strokeWidth="0.5"
+                    className="sparkline-dot"
+                />
             )}
             {points.map((p, i) =>
                 <circle
@@ -192,12 +201,13 @@ function CardFront (props: StockCardProps & {
     onTargetChange: (v: string) => void;
     isMuted: boolean;
     onMuteToggle: () => void;
+    isTargetReached: boolean;
 }) {
 
     const {
         symbol, price, change, changePercent, name, chart, onRemove,
         targetPrice, isEditingTarget, setIsEditingTarget, onTargetChange,
-        isMuted, onMuteToggle,
+        isMuted, onMuteToggle, isTargetReached,
     } = props;
 
     const isPositive = change >= 0;
@@ -225,8 +235,8 @@ function CardFront (props: StockCardProps & {
                 <div className="stock-symbol metallic-gold">{symbol}</div>
                 <div className={`stock-change ${isPositive ? 'positive' : 'negative'}`}>
                     {isPositive ?
-                        <ArrowUpIcon className="w-4 h-4 inline" /> :
-                        <ArrowDownIcon className="w-4 h-4 inline" />
+                        <ArrowUpIcon className="stock-change-arrow" /> :
+                        <ArrowDownIcon className="stock-change-arrow" />
                     }
                     <span>
                         {(typeof change === 'number' ? Math.abs(change) : 0).toFixed(2)} (
@@ -305,7 +315,7 @@ function CardFront (props: StockCardProps & {
                         <div className="target-price-display">
                             {targetPrice !== null &&
                                 <span
-                                    className="target-price-text"
+                                    className={`target-price-text ${isTargetReached ? 'target-reached' : ''}`}
                                     onClick={() => setIsEditingTarget(true)}
                                     title="Edit target price"
                                 >
@@ -513,6 +523,15 @@ export function StockCard (props: StockCardProps) {
         setShow1Year(!show1Year);
     };
 
+    const isTargetReached = targetPrice !== null && props.chart && props.chart.length > 0 && (() => {
+        const prices = props.chart.map((p) => p.close);
+        const allPrices = [...prices, props.price,];
+        const dayMin = Math.min(...allPrices);
+        const dayMax = Math.max(...allPrices);
+
+        return targetPrice >= dayMin && targetPrice <= dayMax;
+    })();
+
     return (
         <div
             className={`stock-card ${isFlipped ? 'is-flipped' : ''}`}
@@ -529,6 +548,7 @@ export function StockCard (props: StockCardProps) {
                     isEditingTarget={isEditingTarget}
                     setIsEditingTarget={setIsEditingTarget}
                     onTargetChange={handleTargetChange}
+                    isTargetReached={!!isTargetReached}
                 />
                 <CardBack
                     symbol={symbol}
