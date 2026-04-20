@@ -81,7 +81,7 @@ export default defineConfig({
     plugins: [
         react(),
         suppressDeprecations(),
-        electron({
+        process.env.VITE_WEB === 'true' ? null : electron({
             main: {
                 entry: 'electron/main.ts',
                 vite: {
@@ -111,7 +111,7 @@ export default defineConfig({
                 },
             },
         }),
-        process.env.NODE_ENV === 'test' ? null : electronRenderer(),
+        process.env.NODE_ENV === 'test' || process.env.VITE_WEB === 'true' ? null : electronRenderer(),
         suppressDeprecations(),
     ],
     envPrefix: ['VITE_', 'STOCKS',],
