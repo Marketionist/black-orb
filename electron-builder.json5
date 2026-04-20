@@ -9,6 +9,12 @@
     output: "release/${version}",
   },
   files: ["dist", "dist-electron"],
+  extraResources: [
+    {
+      from: "public/alarm.wav",
+      to: "alarm.wav",
+    },
+  ],
   mac: {
     target: ["dmg"],
     artifactName: "${productName}-Mac-${version}-Installer.${ext}",
