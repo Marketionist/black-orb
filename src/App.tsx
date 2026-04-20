@@ -124,6 +124,16 @@ function App () {
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
 
+    // Prevent scrolling in Tesla Mode
+    useEffect(() => {
+        if (isTeslaMode) {
+            document.body.classList.add('no-scroll');
+        } else {
+            document.body.classList.remove('no-scroll');
+        }
+        return () => document.body.classList.remove('no-scroll');
+    }, [isTeslaMode]);
+
     // Load state from localStorage on mount
     useEffect(() => {
         const storedTickers = localStorage.getItem('dashboard_tickers');
