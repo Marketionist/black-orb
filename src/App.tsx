@@ -132,7 +132,7 @@ function App () {
             document.body.classList.remove('no-scroll');
         }
         return () => document.body.classList.remove('no-scroll');
-    }, [isTeslaMode]);
+    }, [isTeslaMode,]);
 
     // Load state from localStorage on mount
     useEffect(() => {
