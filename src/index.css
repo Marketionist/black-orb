@@ -209,7 +209,8 @@ button {
     background-clip: border-box !important;
     -webkit-text-fill-color: var(--text-muted) !important;
     color: var(--text-muted) !important;
-    filter: none !important; /* Remove any gold glow */
+    filter: none !important;
+    /* Remove any gold glow */
 }
 
 .icon-btn-active-border {

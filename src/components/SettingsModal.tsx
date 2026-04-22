@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { XMarkIcon, TrashIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/outline';
+import type { TickerSuggestion } from '../types';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -21,30 +22,42 @@ export function SettingsModal ({
     onReset,
 }: SettingsModalProps) {
     const [newTicker, setNewTicker,] = useState('');
-    const [suggestions, setSuggestions,] = useState<any[]>([]);
+    const [suggestions, setSuggestions,] = useState<TickerSuggestion[]>([]);
     const [localTickers, setLocalTickers,] = useState<string[]>(tickers);
     const [localRate, setLocalRate,] = useState<number>(refreshRate);
     const [localTimezone, setLocalTimezone,] = useState<string>(timezone);
 
     useEffect(() => {
         const query = newTicker.trim();
+        const DEBOUNCE_MS = 300;
 
-        if (query.length < 1 || query.includes(',')) {
-            setSuggestions([]);
-            return;
-        }
+        const timer = setTimeout(() => {
+            const fetchSuggestions = async () => {
+                if (query.length < 1 || query.includes(',')) {
+                    setSuggestions([]);
+                    return;
+                }
 
-        const timer = setTimeout(async () => {
-            try {
-                // @ts-ignore
-                const results = await window.ipcRenderer.invoke('search-tickers', query);
+                try {
+                    type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<TickerSuggestion[]>;
+                    const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
+                    const ipcRenderer = winWithIpc.ipcRenderer;
 
-                setSuggestions(results || []);
-            } catch (err) {
-                console.error('Search failed', err);
-                setSuggestions([]);
-            }
-        }, 300);
+                    if (ipcRenderer && ipcRenderer.invoke) {
+                        const results = await ipcRenderer.invoke('search-tickers', query);
+
+                        setSuggestions(results || []);
+                    }
+                } catch (err) {
+                    console.error('Search failed', err);
+                    setSuggestions([]);
+                }
+            };
+
+            fetchSuggestions().catch((err) => {
+                console.error('Fetch suggestions error:', err);
+            });
+        }, DEBOUNCE_MS);
 
         return () => clearTimeout(timer);
     }, [newTicker,]);

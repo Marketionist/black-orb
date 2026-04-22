@@ -277,8 +277,8 @@ app.whenReady().then(() => {
             const result = await yf.search(query);
 
             return (result.quotes || [])
-                .filter((q: any) => q.isYahooFinance)
-                .map((q: any) => ({
+                .filter((q: { isYahooFinance?: boolean }) => q.isYahooFinance)
+                .map((q: { symbol: string, shortname?: string, longname?: string, quoteType?: string }) => ({
                     symbol: q.symbol,
                     name: q.shortname || q.longname || q.symbol,
                     type: q.quoteType,
