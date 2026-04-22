@@ -34,6 +34,7 @@ function App () {
     const [timezone, setTimezone,] = useState<string>('Local');
     const [isTeslaMode, setIsTeslaMode,] = useState<boolean>(false);
     const [resetKey, setResetKey,] = useState<number>(0);
+    const [targetsUpdateKey, setTargetsUpdateKey,] = useState<number>(0);
     const [tickerMutes, setTickerMutes,] = useState<Record<string, boolean>>(() => {
         const stored = localStorage.getItem('dashboard_ticker_mutes');
 
@@ -95,6 +96,7 @@ function App () {
     }, [tickerMutes, playAlarm,]);
 
     const handleTargetUpdate = (symbol: string, isNew: boolean) => {
+        setTargetsUpdateKey((k) => k + 1);
         if (isNew) {
             setTickerMutes((prev) => {
                 if (!prev[symbol]) { return prev; }
@@ -215,11 +217,15 @@ function App () {
     };
 
     const handleGlobalMuteToggle = () => {
-        const anyUnmuted = tickers.some((t) => !tickerMutes[t]);
-        const next: Record<string, boolean> = {};
+        const tickersWithTargets = tickers.filter((t) => localStorage.getItem(`dashboard_target_${t}`));
 
-        tickers.forEach((t) => {
-            next[t] = anyUnmuted;
+        if (tickersWithTargets.length === 0) { return; }
+
+        const anyTargetUnmuted = tickersWithTargets.some((t) => !tickerMutes[t]);
+        const next = { ...tickerMutes, };
+
+        tickersWithTargets.forEach((t) => {
+            next[t] = anyTargetUnmuted;
         });
         setTickerMutes(next);
         localStorage.setItem('dashboard_ticker_mutes', JSON.stringify(next));
@@ -429,27 +435,47 @@ function App () {
                     />
                 </h1>
                 <div className="header-actions">
-                    <button
-                        className="icon-btn"
-                        onClick={handleGlobalMuteToggle}
-                        title={tickers.every((t) => tickerMutes[t]) ? 'Unmute all' : 'Mute all'}
-                        aria-label={tickers.every((t) => tickerMutes[t]) ? 'Unmute all' : 'Mute all'}
-                    >
-                        {(() => {
-                            if (tickers.every((t) => tickerMutes[t])) {
-                                return <BellAlertIcon className="header-icon" />;
-                            }
-                            const hasActiveTargets = tickers.some(
-                                (t) => !tickerMutes[t] && localStorage.getItem(`dashboard_target_${t}`)
-                            );
+                    {(() => {
+                        const tickersWithTargets = tickers.filter((t) =>
+                            localStorage.getItem(`dashboard_target_${t}`)
+                        );
+                        const hasAnyTargets = tickersWithTargets.length > 0;
+                        const allTargetTickersMuted = hasAnyTargets &&
+                            tickersWithTargets.every((t) => tickerMutes[t]);
 
-                            if (hasActiveTargets) {
-                                return <BellSlashIcon className="header-icon" />;
-                            }
-                            return <BellIcon className="header-icon" />;
-                        })()}
+                        let title = 'Mute all';
 
-                    </button>
+                        if (allTargetTickersMuted) {
+                            title = 'Unmute all';
+                        } else if (!hasAnyTargets) {
+                            title = 'No target prices set';
+                        }
+
+                        // Use targetsUpdateKey in a meaningful way for reactivity without unused expressions
+                        const btnClass = hasAnyTargets ? '' : 'icon-grey';
+                        const reactiveClass = targetsUpdateKey >= 0 ? btnClass : '';
+
+                        return (
+                            <button
+                                className={`icon-btn ${reactiveClass}`}
+                                onClick={handleGlobalMuteToggle}
+                                title={title}
+                                aria-label={title}
+                                disabled={!hasAnyTargets}
+                            >
+                                {(() => {
+                                    if (allTargetTickersMuted) {
+                                        return <BellAlertIcon className="header-icon" />;
+                                    }
+                                    if (hasAnyTargets) {
+                                        // If any target is unmuted, show slash (ready to mute)
+                                        return <BellSlashIcon className="header-icon" />;
+                                    }
+                                    return <BellIcon className="header-icon" />;
+                                })()}
+                            </button>
+                        );
+                    })()}
 
                     <button
                         className="icon-btn"
