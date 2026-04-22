@@ -271,6 +271,24 @@ app.whenReady().then(() => {
         }
     );
 
+    ipcMain.handle('search-tickers', async (_event, query: string) => {
+        try {
+            if (!query || query.length < 1) { return []; }
+            const result = await yf.search(query);
+
+            return (result.quotes || [])
+                .filter((q: any) => q.isYahooFinance)
+                .map((q: any) => ({
+                    symbol: q.symbol,
+                    name: q.shortname || q.longname || q.symbol,
+                    type: q.quoteType,
+                }));
+        } catch (error) {
+            console.error('Search error:', error);
+            return [];
+        }
+    });
+
     ipcMain.handle('play-alarm', () => {
         const isDev = !!VITE_DEV_SERVER_URL;
         const alarmPath = isDev ?

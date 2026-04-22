@@ -263,7 +263,31 @@ export async function fetchChart (symbol: string, options: ChartOptions) {
     return formatChartResult(data.chart?.result?.[0]);
 }
 
+/**
+ * Searches for tickers matching the given query.
+ */
+export async function search (query: string) {
+    if (!query) { return { quotes: [], }; }
+
+    const { cookie, } = await crumbManager.getCredentials();
+    const url = `https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(query)}`;
+
+    const response = await fetch(url, {
+        headers: {
+            ...BASE_HEADERS,
+            Cookie: cookie || '',
+        },
+    });
+
+    if (!response.ok) {
+        throw new Error(`Yahoo Finance Search API error: ${response.statusText}`);
+    }
+
+    return await response.json();
+}
+
 export default {
     quote: fetchQuote,
     chart: fetchChart,
+    search,
 };

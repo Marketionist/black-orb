@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { XMarkIcon, TrashIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/outline';
 
 interface SettingsModalProps {
@@ -21,9 +21,33 @@ export function SettingsModal ({
     onReset,
 }: SettingsModalProps) {
     const [newTicker, setNewTicker,] = useState('');
+    const [suggestions, setSuggestions,] = useState<any[]>([]);
     const [localTickers, setLocalTickers,] = useState<string[]>(tickers);
     const [localRate, setLocalRate,] = useState<number>(refreshRate);
     const [localTimezone, setLocalTimezone,] = useState<string>(timezone);
+
+    useEffect(() => {
+        const query = newTicker.trim();
+
+        if (query.length < 1 || query.includes(',')) {
+            setSuggestions([]);
+            return;
+        }
+
+        const timer = setTimeout(async () => {
+            try {
+                // @ts-ignore
+                const results = await window.ipcRenderer.invoke('search-tickers', query);
+
+                setSuggestions(results || []);
+            } catch (err) {
+                console.error('Search failed', err);
+                setSuggestions([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [newTicker,]);
 
     if (!isOpen) { return null; }
 
@@ -52,6 +76,14 @@ export function SettingsModal ({
 
     const handleSave = () => {
         onSave(localTickers, localRate, localTimezone);
+    };
+
+    const handleSelectSuggestion = (symbol: string) => {
+        if (!localTickers.includes(symbol)) {
+            setLocalTickers([...localTickers, symbol,]);
+        }
+        setNewTicker('');
+        setSuggestions([]);
     };
 
     return (
@@ -148,23 +180,43 @@ export function SettingsModal ({
                     <label>
                         Manage Tickers (comma separated to add multiple)
                     </label>
-                    <form className="input-flex" onSubmit={handleAdd} autoComplete="off">
-                        <input
-                            type="text"
-                            placeholder="e.g. AAPL, NVDA"
-                            value={newTicker}
-                            onChange={(e) => setNewTicker(e.target.value)}
-                            autoComplete="off"
-                        />
-                        <button
-                            type="submit"
-                            className="icon-btn"
-                            title="Add ticker"
-                            aria-label="Add ticker"
-                        >
-                            <PlusIcon />
-                        </button>
-                    </form>
+                    <div className="input-with-suggestions">
+                        <form className="input-flex" onSubmit={handleAdd} autoComplete="off">
+                            <input
+                                type="text"
+                                placeholder="e.g. AAPL, NVDA"
+                                value={newTicker}
+                                onChange={(e) => setNewTicker(e.target.value)}
+                                autoComplete="off"
+                            />
+                            <button
+                                type="submit"
+                                className="icon-btn"
+                                title="Add ticker"
+                                aria-label="Add ticker"
+                            >
+                                <PlusIcon />
+                            </button>
+                        </form>
+
+                        {suggestions.length > 0 &&
+                            <div className="suggestions-dropdown">
+                                {suggestions.map((s) =>
+                                    <div
+                                        key={s.symbol}
+                                        className="suggestion-item"
+                                        onClick={() => handleSelectSuggestion(s.symbol)}
+                                    >
+                                        <div className="suggestion-symbol metallic-gold">{s.symbol}</div>
+                                        <div className="suggestion-info">
+                                            <div className="suggestion-name">{s.name}</div>
+                                            <div className="suggestion-type">{s.type}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        }
+                    </div>
 
                     <div className="ticker-list">
                         {localTickers.map((ticker) =>
