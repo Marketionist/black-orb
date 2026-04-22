@@ -5,10 +5,10 @@
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --accent-primary: #3b82f6;
-    --accent-hover: #2563eb;
-    --success: #10b981;
-    --danger: #ef4444;
+    --accent-primary: #1d4ed8;
+    --accent-hover: #1e40af;
+    --success: #4d7c0f;
+    --danger: #991b1b;
     --border-color: rgba(255, 255, 255, 0.08);
     --border-radius: 16px;
     --border-radius-sm: 8px;
@@ -152,10 +152,12 @@ button {
 }
 
 .icon-btn svg {
-    background: var(--gold-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--gold-deep-light);
+    -webkit-text-fill-color: initial;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+    filter: drop-shadow(0 0 1px rgba(229, 193, 88, 0.4));
     width: 20px;
     height: 20px;
 }
@@ -203,7 +205,12 @@ button {
 
 .icon-grey svg {
     background: none !important;
+    -webkit-background-clip: border-box !important;
+    background-clip: border-box !important;
     -webkit-text-fill-color: var(--text-muted) !important;
+    color: var(--text-muted) !important;
+    filter: none !important;
+    /* Remove any gold glow */
 }
 
 .icon-btn-active-border {
@@ -448,6 +455,7 @@ button {
 .modal-title {
     font-size: 1.5rem;
     font-weight: 700;
+    color: var(--text-secondary);
 }
 
 .form-group {
@@ -472,7 +480,7 @@ select {
     width: 100%;
     background: var(--bg-primary);
     border: 1px solid var(--border-color);
-    color: var(--gold-deep-medium);
+    color: var(--gold-deep-light);
     padding: 0.75rem 1rem;
     border-radius: var(--border-radius-sm);
     font-family: inherit;
@@ -496,8 +504,8 @@ select {
     /* More space on the right for the arrow */
     appearance: none;
     -webkit-appearance: none;
-    /* Custom premium arrow in white/muted, not gold */
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23f8fafc' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
+    /* Custom premium arrow in gold */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23c59b2a' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19.5 8.25l-7.5 7.5-7.5-7.5' /%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 1rem center;
     background-size: 1.25rem;
@@ -509,6 +517,70 @@ select:focus {
     outline: none;
     border-color: var(--gold-deep-medium);
     box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.2);
+}
+
+.input-with-suggestions {
+    position: relative;
+    width: 100%;
+}
+
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    max-height: 200px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-top: none;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    margin-top: -1px;
+}
+
+.suggestion-item {
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.suggestion-symbol {
+    font-weight: 700;
+    min-width: 60px;
+}
+
+.suggestion-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.suggestion-name {
+    font-size: 0.875rem;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.suggestion-type {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
 }
 
 .ticker-list {
@@ -645,7 +717,7 @@ select:focus {
 }
 
 .logo-tesla-glow {
-    box-shadow: 0 0 4px 1px rgba(212, 175, 55, 0.7), inset 0 0 4px 1px rgba(212, 175, 55, 0.7);
+    box-shadow: 0 0 6px 1px rgba(229, 193, 88, 0.8), inset 0 0 6px 1px rgba(229, 193, 88, 0.8);
     background-color: transparent;
 }
 
@@ -694,11 +766,13 @@ select:focus {
     padding: 0.2rem 0;
     display: flex;
     align-items: center;
+    transform: translateZ(0);
 }
 
 .card-back-subtitle {
     font-size: 0.85rem;
     color: var(--text-secondary);
+    transform: translateZ(0);
 }
 
 .card-back-empty {
@@ -715,6 +789,7 @@ select:focus {
     cursor: pointer;
     z-index: 10;
     padding: 5px;
+    transform: translateZ(0);
 }
 
 .card-back-perf {
@@ -825,8 +900,8 @@ select:focus {
     box-shadow:
         inset -10px -10px 30px rgba(0, 0, 0, 0.9),
         inset 10px 10px 30px rgba(255, 255, 255, 0.2),
-        0 0 50px rgba(212, 175, 55, 0.4),
-        0 0 100px rgba(212, 175, 55, 0.2);
+        0 0 50px rgba(255, 215, 0, 0.4),
+        0 0 100px rgba(255, 215, 0, 0.2);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -840,7 +915,7 @@ select:focus {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    background: radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 60%);
+    background: radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 60%);
     animation: pulse 2s infinite alternate ease-in-out;
 }
 
@@ -852,12 +927,12 @@ select:focus {
     height: 6vmin;
     margin-top: -3vmin;
     margin-left: -3vmin;
-    background: radial-gradient(circle, #fff, #fde047 40%, rgba(212, 175, 55, 0.8));
+    background: radial-gradient(circle, #fff, #fde047 40%, rgba(255, 215, 0, 0.8));
     border-radius: 50%;
     box-shadow:
         0 0 15px #fff,
         0 0 30px #fde047,
-        0 0 50px rgba(212, 175, 55, 0.8),
+        0 0 50px rgba(255, 215, 0, 0.8),
         inset 0 0 10px #fff;
     z-index: 20;
 }
@@ -1175,7 +1250,7 @@ select:focus {
 
 .icon-btn-small {
     background: var(--bg-secondary);
-    color: var(--gold-deep-medium);
+    color: var(--gold-deep-light);
     border: 1px solid var(--border-color);
     border-radius: 50%;
     display: flex;
@@ -1199,8 +1274,8 @@ select:focus {
     transform: translateY(-2px);
     box-shadow:
         0 6px 15px rgba(0, 0, 0, 0.4),
-        0 0 10px rgba(212, 175, 55, 0.2);
-    border-color: rgba(212, 175, 55, 0.5);
+        0 0 10px rgba(255, 215, 0, 0.2);
+    border-color: rgba(255, 215, 0, 0.5);
 }
 
 .target-price-container {
@@ -1216,20 +1291,24 @@ select:focus {
 
 .target-price-text {
     font-size: 0.875rem;
-    color: var(--gold-deep-medium);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: var(--transition);
     transform: translateZ(0);
 }
 
-.target-reached {
-    border: 1px solid var(--gold-deep-medium);
-    padding: 2px 4px;
-    border-radius: 8px;
+.target-price-text.target-reached {
+    color: var(--gold-deep-light);
 }
 
 .target-price-value {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
     border-bottom: 1px dashed var(--gold-deep-medium);
+}
+
+.target-reached .target-price-value {
+    color: var(--gold-deep-light);
 }
 
 .target-price-form {
@@ -1289,8 +1368,14 @@ select:focus {
     border: 1px solid var(--border-color);
     border-radius: 4px;
     background: var(--bg-primary);
-    color: var(--gold-deep-medium) !important;
-    caret-color: var(--gold-deep-medium);
+    color: var(--gold-deep-light) !important;
+    caret-color: var(--gold-deep-light);
+}
+
+select option {
+    background-color: var(--bg-secondary);
+    color: var(--gold-deep-light);
+    -webkit-text-fill-color: var(--gold-deep-light);
 }
 
 .target-input::placeholder {
@@ -1300,6 +1385,5 @@ select:focus {
 
 .target-input:focus {
     outline: none;
-    border-color: var(--gold-deep-medium);
     box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
 }

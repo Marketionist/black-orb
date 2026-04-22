@@ -1,5 +1,6 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { XMarkIcon, TrashIcon, PlusIcon, CheckIcon } from '@heroicons/react/24/outline';
+import type { TickerSuggestion } from '../types';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -21,9 +22,45 @@ export function SettingsModal ({
     onReset,
 }: SettingsModalProps) {
     const [newTicker, setNewTicker,] = useState('');
+    const [suggestions, setSuggestions,] = useState<TickerSuggestion[]>([]);
     const [localTickers, setLocalTickers,] = useState<string[]>(tickers);
     const [localRate, setLocalRate,] = useState<number>(refreshRate);
     const [localTimezone, setLocalTimezone,] = useState<string>(timezone);
+
+    useEffect(() => {
+        const query = newTicker.trim();
+        const DEBOUNCE_MS = 300;
+
+        const timer = setTimeout(() => {
+            const fetchSuggestions = async () => {
+                if (query.length < 1 || query.includes(',')) {
+                    setSuggestions([]);
+                    return;
+                }
+
+                try {
+                    type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<TickerSuggestion[]>;
+                    const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
+                    const ipcRenderer = winWithIpc.ipcRenderer;
+
+                    if (ipcRenderer && ipcRenderer.invoke) {
+                        const results = await ipcRenderer.invoke('search-tickers', query);
+
+                        setSuggestions(results || []);
+                    }
+                } catch (err) {
+                    console.error('Search failed', err);
+                    setSuggestions([]);
+                }
+            };
+
+            fetchSuggestions().catch((err) => {
+                console.error('Fetch suggestions error:', err);
+            });
+        }, DEBOUNCE_MS);
+
+        return () => clearTimeout(timer);
+    }, [newTicker,]);
 
     if (!isOpen) { return null; }
 
@@ -52,6 +89,14 @@ export function SettingsModal ({
 
     const handleSave = () => {
         onSave(localTickers, localRate, localTimezone);
+    };
+
+    const handleSelectSuggestion = (symbol: string) => {
+        if (!localTickers.includes(symbol)) {
+            setLocalTickers([...localTickers, symbol,]);
+        }
+        setNewTicker('');
+        setSuggestions([]);
     };
 
     return (
@@ -148,23 +193,43 @@ export function SettingsModal ({
                     <label>
                         Manage Tickers (comma separated to add multiple)
                     </label>
-                    <form className="input-flex" onSubmit={handleAdd} autoComplete="off">
-                        <input
-                            type="text"
-                            placeholder="e.g. AAPL, NVDA"
-                            value={newTicker}
-                            onChange={(e) => setNewTicker(e.target.value)}
-                            autoComplete="off"
-                        />
-                        <button
-                            type="submit"
-                            className="icon-btn"
-                            title="Add ticker"
-                            aria-label="Add ticker"
-                        >
-                            <PlusIcon />
-                        </button>
-                    </form>
+                    <div className="input-with-suggestions">
+                        <form className="input-flex" onSubmit={handleAdd} autoComplete="off">
+                            <input
+                                type="text"
+                                placeholder="e.g. AAPL, NVDA"
+                                value={newTicker}
+                                onChange={(e) => setNewTicker(e.target.value)}
+                                autoComplete="off"
+                            />
+                            <button
+                                type="submit"
+                                className="icon-btn"
+                                title="Add ticker"
+                                aria-label="Add ticker"
+                            >
+                                <PlusIcon />
+                            </button>
+                        </form>
+
+                        {suggestions.length > 0 &&
+                            <div className="suggestions-dropdown">
+                                {suggestions.map((s) =>
+                                    <div
+                                        key={s.symbol}
+                                        className="suggestion-item"
+                                        onClick={() => handleSelectSuggestion(s.symbol)}
+                                    >
+                                        <div className="suggestion-symbol metallic-gold">{s.symbol}</div>
+                                        <div className="suggestion-info">
+                                            <div className="suggestion-name">{s.name}</div>
+                                            <div className="suggestion-type">{s.type}</div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        }
+                    </div>
 
                     <div className="ticker-list">
                         {localTickers.map((ticker) =>

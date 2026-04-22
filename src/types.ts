@@ -22,3 +22,9 @@ export interface ChartOptions {
   period1: Date
   interval: '15m' | '1h' | '1d' | '1wk' | '1mo'
 }
+
+export interface TickerSuggestion {
+  symbol: string;
+  name: string;
+  type: string;
+}
