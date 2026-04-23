@@ -1,10 +1,11 @@
 # Black Orb
 
-Black Orb is a modern, clean and anonymous stock price tracking dashboard. Built
-using Electron, React, and TypeScript, it offers a beautifully designed
-interface with glassmorphism and a premium dark mode aesthetic. Real-time stock
-data is seamlessly fetched using the Yahoo Finance API via IPC to bypass browser
-CORS constraints, providing accurate, reliable market data.
+Black Orb is a modern, lightweight and anonymous stock price tracking dashboard.
+It does not require any credentials or logging in - just add stock tickers and
+start tracking them. Built using Electron, React, and TypeScript, it offers a beautifully designed interface with glassmorphism and a premium dark mode
+aesthetic. Real-time stock data is seamlessly fetched using the Yahoo Finance
+API via IPC to bypass browser CORS constraints, providing accurate, reliable
+market data.
 
 ## Features
 
@@ -17,6 +18,19 @@ Finance.
 with interactive "gold on black" highlights.
 - **Cross-platform**: readily packages for both Windows and Mac using
 electron-builder.
+
+> Note: due to new Apple restrictions it will not let you run the app without
+> allowlisting it in Security settings. **Please be assured that this app was
+> not made to inject any malware that may harm your operating system or
+> compromise your privacy**: all code is open source and can be seen by everyone
+> on [GitHub](https://github.com/Marketionist/black-orb).
+>
+> To fix this on your Mac, choose Apple menu > System Settings, then click
+> Privacy & Security in the sidebar and scroll down to Security section. Click
+> Open Anyway. This button is available for about an hour after you try to open
+> the app. Enter your login password, then click OK. The app will be saved as an
+> exception to your security settings, and you can open it in the future by
+> double-clicking it, just as you can for any authorized app.
 
 ## Development
 
@@ -57,8 +71,14 @@ following command in the project root:
 
 3. **Start the development server** - to run the app locally with hot-module
 replacement, execute:
+
     ```bash
     npm run dev
+    ```
+To run it as a web server on http://localhost:5173/, execute:
+
+    ```bash
+    npm run dev:web
     ```
 
 ### Building Instructions
@@ -84,6 +104,16 @@ To package the application as a Windows `.exe` installer (using NSIS):
 
 ```bash
 npm run build:win
+```
+
+The compiled installer will be located under the `release/` directory.
+
+#### Linux Build
+
+To package the application as a Linux `.AppImage` installer:
+
+```bash
+npm run build:linux
 ```
 
 The compiled installer will be located under the `release/` directory.
