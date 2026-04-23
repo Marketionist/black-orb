@@ -1,6 +1,6 @@
 {
   "name": "black-orb",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Black Orb is a modern, lightweight and anonymous stock price tracking dashboard",
   "type": "module",
   "engines": {
