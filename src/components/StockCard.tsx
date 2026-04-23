@@ -423,7 +423,7 @@ function CardBack (props: CardBackProps) {
                 <>
                     <div className="card-back-header">
                         <div className="card-back-subtitle">
-                            {symbol} • {show1Year ? '1 Year' : '30 Days'}
+                            {symbol} • {show1Year ? '1 year' : '30 days'}
                         </div>
                     </div>
 
@@ -443,7 +443,7 @@ function CardBack (props: CardBackProps) {
                     </div>
 
                     <div className="card-back-toggle" onClick={onToggleHistory}>
-                        {show1Year ? 'Show 30 Days' : 'Show 1 Year'}
+                        {show1Year ? 'Show 30 days' : 'Show 1 year'}
                     </div>
 
                     {historicalData && historicalData.length >= MIN_DATA_POINTS &&
@@ -483,6 +483,7 @@ export function StockCard (props: StockCardProps) {
         if (val === '') {
             setTargetPrice(null);
             localStorage.removeItem(`dashboard_target_${symbol}`);
+            if (props.onTargetUpdate) { props.onTargetUpdate(false); }
         } else {
             const num = Number(val);
             const isNew = targetPrice === null;
@@ -491,6 +492,7 @@ export function StockCard (props: StockCardProps) {
             localStorage.setItem(`dashboard_target_${symbol}`, num.toString());
             if (props.onTargetUpdate) { props.onTargetUpdate(isNew); }
         }
+        setIsEditingTarget(false);
     };
 
 
