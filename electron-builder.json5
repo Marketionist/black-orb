@@ -18,6 +18,7 @@
   mac: {
     target: ["dmg"],
     artifactName: "${productName}-Mac-${version}-Installer.${ext}",
+    category: "public.app-category.finance",
   },
   win: {
     target: [
@@ -37,5 +38,6 @@
   linux: {
     target: ["AppImage"],
     artifactName: "${productName}-Linux-${version}.${ext}",
+    category: "Finance",
   },
 }
