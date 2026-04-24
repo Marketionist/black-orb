@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useState } from 'react';
 import {
-    ArrowUpIcon, ArrowDownIcon, TrashIcon, BellIcon, CheckIcon, BellAlertIcon, BellSlashIcon
+    ArrowUpIcon, ArrowDownIcon, TrashIcon, BellIcon, CheckIcon, BellAlertIcon, BellSlashIcon,
+    CalculatorIcon
 } from '@heroicons/react/24/outline';
 
 
@@ -194,6 +195,117 @@ function Sparkline ({
     );
 }
 
+const INVESTMENT_BLUR_MS = 200;
+
+function InvestmentSection ({
+    investmentSum,
+    isEditingInvestment,
+    setIsEditingInvestment,
+    setInvestmentSum,
+    targetPrice,
+    symbol,
+}: {
+    investmentSum: number | null;
+    isEditingInvestment: boolean;
+    setIsEditingInvestment: (v: boolean) => void;
+    setInvestmentSum: (v: number | null) => void;
+    targetPrice: number | null;
+    symbol: string;
+}) {
+    if (investmentSum !== null && !isEditingInvestment) {
+        const effectivePrice = targetPrice || 1;
+        const shares = Math.floor(investmentSum / effectivePrice);
+        const leftover = (investmentSum % effectivePrice).toFixed(2);
+
+        return (
+            <div className="investment-result">
+                $
+                <span
+                    className="investment-sum-value"
+                    onClick={() => setIsEditingInvestment(true)}
+                    title="Edit investment sum"
+                >
+                    {investmentSum}
+                </span>
+                {` @ $${targetPrice?.toFixed(2)} = ${shares}`}
+                {` share(s) and $${leftover} left`}
+            </div>
+        );
+    }
+
+    if (isEditingInvestment) {
+        return (
+            <form
+                className="investment-form"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const val = formData.get('investment') as string;
+                    const num = val ? Number(val) : null;
+
+                    setInvestmentSum(num);
+                    if (num === null) {
+                        localStorage.removeItem(
+                            `dashboard_investment_${symbol}`
+                        );
+                    } else {
+                        localStorage.setItem(
+                            `dashboard_investment_${symbol}`,
+                            num.toString()
+                        );
+                    }
+                    setIsEditingInvestment(false);
+                }}
+            >
+                <input
+                    type="number"
+                    name="investment"
+                    className="investment-input"
+                    placeholder="Investment sum"
+                    defaultValue={investmentSum ?? ''}
+                    autoFocus
+                    onBlur={() => {
+                        setTimeout(() => {
+                            const active =
+                                document.activeElement as HTMLElement;
+
+                            if (
+                                !active ||
+                                !active.closest('.investment-container')
+                            ) {
+                                setIsEditingInvestment(false);
+                            }
+                        }, INVESTMENT_BLUR_MS);
+                    }}
+                />
+                <button
+                    type="submit"
+                    className="icon-btn-small"
+                    title="Save investment sum"
+                >
+                    <CheckIcon className="icon-inline" />
+                </button>
+                <button
+                    type="button"
+                    className="icon-btn-small btn-remove"
+                    title="Remove investment sum"
+                    onClick={() => {
+                        setInvestmentSum(null);
+                        localStorage.removeItem(
+                            `dashboard_investment_${symbol}`
+                        );
+                        setIsEditingInvestment(false);
+                    }}
+                >
+                    <TrashIcon className="icon-inline" />
+                </button>
+            </form>
+        );
+    }
+
+    return null;
+}
+
 function CardFront (props: StockCardProps & {
     targetPrice: number | null;
     isEditingTarget: boolean;
@@ -202,12 +314,19 @@ function CardFront (props: StockCardProps & {
     isMuted: boolean;
     onMuteToggle: () => void;
     isTargetReached: boolean;
+    investmentSum: number | null;
+    setInvestmentSum: (v: number | null) => void;
+    isEditingInvestment: boolean;
+    setIsEditingInvestment: (v: boolean) => void;
+    onFlip: () => void;
 }) {
 
     const {
         symbol, price, change, changePercent, name, chart, onRemove,
         targetPrice, isEditingTarget, setIsEditingTarget, onTargetChange,
         isMuted, onMuteToggle, isTargetReached,
+        investmentSum, setInvestmentSum, isEditingInvestment, setIsEditingInvestment,
+        onFlip,
     } = props;
 
     const isPositive = change >= 0;
@@ -230,8 +349,8 @@ function CardFront (props: StockCardProps & {
 
 
     return (
-        <div className="card-front">
-            <div className="stock-header">
+        <div className="card-front" onClick={onFlip}>
+            <div className="stock-header" onClick={(e) => e.stopPropagation()}>
                 <div className="stock-symbol metallic-gold">{symbol}</div>
                 <div className={`stock-change ${isPositive ? 'positive' : 'negative'}`}>
                     {isPositive ?
@@ -249,124 +368,149 @@ function CardFront (props: StockCardProps & {
                         {name}
                     </div> :
                     <div />}
-
-                <div className="target-price-container" onClick={(e) => e.stopPropagation()}>
-                    {isEditingTarget ?
-                        <form
-                            className="target-price-form"
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                const formData = new FormData(e.currentTarget);
-                                const val = formData.get('target') as string;
-
-                                setIsEditingTarget(false);
-                                onTargetChange(val);
-                            }}
-                        >
-                            <input
-                                type="number"
-                                name="target"
-                                step="any"
-                                className="target-input"
-                                placeholder="Target price"
-                                defaultValue={targetPrice ?? ''}
-                                onBlur={(e) => {
-                                    setTimeout(() => {
-                                        const active = document.activeElement as HTMLElement;
-
-                                        if (!active || !active.closest('.target-price-container')) {
-                                            setIsEditingTarget(false);
-                                            if (e.target.value) {
-                                                onTargetChange(e.target.value);
-                                            }
-                                        }
-                                    }, BLUR_TIMEOUT_MS);
-                                }}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Escape') {
-                                        setIsEditingTarget(false);
-                                    }
-                                }}
-                                autoFocus
-                            />
-                            <button
-                                type="submit"
-                                className="icon-btn target-action-btn"
-                                title="Save target price"
-                                aria-label="Save target price"
-                                onMouseDown={(e) => e.preventDefault()}
-                            >
-                                <CheckIcon />
-                            </button>
-                            <button
-                                type="button"
-                                className="btn-remove icon-btn target-action-btn"
-                                title="Remove target price"
-                                aria-label="Remove target price"
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => {
-                                    setIsEditingTarget(false);
-                                    onTargetChange('');
-                                }}
-                            >
-                                <TrashIcon />
-                            </button>
-                        </form> :
-                        <div className="target-price-display">
-                            {targetPrice !== null &&
-                                <span
-                                    className={`target-price-text ${isTargetReached ? 'target-reached' : ''}`}
-                                    onClick={() => setIsEditingTarget(true)}
-                                    title="Edit target price"
+            </div>
+            <div className="stock-price stock-price-decorated" onClick={(e) => e.stopPropagation()}>
+                <div className="price-row">
+                    <div className="price-display-wrapper">
+                        {typeof price === 'number' ?
+                            <span className="metallic-gold">{`$${price.toFixed(2)}`}</span> :
+                            <div className="na-container">
+                                <span className="metallic-gold">N/A</span>
+                                <button
+                                    className="btn-remove icon-btn"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onRemove();
+                                    }}
+                                    title="Remove ticker"
+                                    aria-label="Remove ticker"
                                 >
-                                    $
-                                    <span className="target-price-value">
-                                        {targetPrice?.toFixed(2)}
-                                    </span>
-                                </span>
-                            }
-                            <button
-                                className={`icon-btn-small ${targetPrice === null ? 'icon-grey' : ''}`}
-                                onClick={handleBellClick}
-                                title={bellTitle}
-                                aria-label={bellTitle}
+                                    <TrashIcon className="icon-inline" />
+                                </button>
+                            </div>
+                        }
+                    </div>
+
+                    <div className="target-price-container" onClick={(e) => e.stopPropagation()}>
+                        {isEditingTarget ?
+                            <form
+                                className="target-price-form"
+                                onSubmit={(e) => {
+                                    e.preventDefault();
+                                    const formData = new FormData(e.currentTarget);
+                                    const val = formData.get('target') as string;
+
+                                    setIsEditingTarget(false);
+                                    onTargetChange(val);
+                                }}
                             >
-                                {(() => {
-                                    if (targetPrice === null) {
-                                        return <BellIcon className="icon-inline" />;
-                                    }
-                                    return isMuted ?
-                                        <BellAlertIcon className="icon-inline" /> :
-                                        <BellSlashIcon className="icon-inline" />;
-                                })()}
-                            </button>
+                                <input
+                                    type="number"
+                                    name="target"
+                                    step="any"
+                                    className="target-input"
+                                    placeholder="Target price"
+                                    defaultValue={targetPrice ?? ''}
+                                    onBlur={(e) => {
+                                        setTimeout(() => {
+                                            const active = document.activeElement as HTMLElement;
 
+                                            if (!active || !active.closest('.target-price-container')) {
+                                                setIsEditingTarget(false);
+                                                if (e.target.value) {
+                                                    onTargetChange(e.target.value);
+                                                }
+                                            }
+                                        }, BLUR_TIMEOUT_MS);
+                                    }}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Escape') {
+                                            setIsEditingTarget(false);
+                                        }
+                                    }}
+                                    autoFocus
+                                />
+                                <button
+                                    type="submit"
+                                    className="icon-btn-small"
+                                    title="Save target price"
+                                    aria-label="Save target price"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                >
+                                    <CheckIcon className="icon-inline" />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="icon-btn-small btn-remove"
+                                    title="Remove target price"
+                                    aria-label="Remove target price"
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    onClick={() => {
+                                        setIsEditingTarget(false);
+                                        onTargetChange('');
+                                    }}
+                                >
+                                    <TrashIcon className="icon-inline" />
+                                </button>
+                            </form> :
+                            <div className="target-price-display">
+                                {targetPrice !== null &&
+                                    <span className={`target-price-text ${isTargetReached ? 'target-reached' : ''}`}>
+                                        $
+                                        <span
+                                            className="target-price-value"
+                                            onClick={() => setIsEditingTarget(true)}
+                                            title="Edit target price"
+                                        >
+                                            {targetPrice?.toFixed(2)}
+                                        </span>
+                                    </span>
+                                }
+                                <button
+                                    className={`icon-btn-small ${targetPrice === null ? 'icon-grey' : ''}`}
+                                    onClick={handleBellClick}
+                                    title={bellTitle}
+                                    aria-label={bellTitle}
+                                >
+                                    {(() => {
+                                        if (targetPrice === null) {
+                                            return <BellIcon className="icon-inline" />;
+                                        }
+                                        return isMuted ?
+                                            <BellAlertIcon className="icon-inline" /> :
+                                            <BellSlashIcon className="icon-inline" />;
+                                    })()}
+                                </button>
+                                {investmentSum === null &&
+                                    <button
+                                        className="icon-btn-small icon-grey"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setIsEditingInvestment(true);
+                                        }}
+                                        title="Calculate number of shares"
+                                    >
+                                        <CalculatorIcon className="icon-inline" />
+                                    </button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
 
-                        </div>
-                    }
+                <div className="investment-container">
+                    <InvestmentSection
+                        investmentSum={investmentSum}
+                        isEditingInvestment={isEditingInvestment}
+                        setIsEditingInvestment={setIsEditingInvestment}
+                        setInvestmentSum={setInvestmentSum}
+                        targetPrice={targetPrice}
+                        symbol={symbol}
+                    />
                 </div>
             </div>
-            <div className="stock-price stock-price-decorated">
-                {typeof price === 'number' ?
-                    <span className="metallic-gold">{`$${price.toFixed(2)}`}</span> :
-                    <div className="na-container">
-                        <span className="metallic-gold">N/A</span>
-                        <button
-                            className="btn-remove icon-btn"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onRemove();
-                            }}
-                            title="Remove ticker"
-                            aria-label="Remove ticker"
-                        >
-                            <TrashIcon />
-                        </button>
-                    </div>
-                }
-            </div>
             {chart && chart.length > 0 &&
-                <div className="sparkline-container sparkline-container-front">
+                <div className="sparkline-container sparkline-container-front" onClick={(e) => e.stopPropagation()}>
                     <Sparkline
                         data={chart}
                         color={isPositive ? 'var(--success)' : 'var(--danger)'}
@@ -393,8 +537,11 @@ interface CardBackProps {
     timezone?: string;
 }
 
-function CardBack (props: CardBackProps) {
-    const { symbol, isLoading, show1Year, history30d, history1y, onToggleHistory, targetPrice, timezone, } = props;
+function CardBack (props: CardBackProps & { onFlip: () => void }) {
+    const {
+        symbol, isLoading, show1Year, history30d, history1y, onToggleHistory, targetPrice, timezone,
+        onFlip,
+    } = props;
 
     const historicalData = show1Year ? history1y : history30d;
     let historicalChange = 0;
@@ -417,17 +564,17 @@ function CardBack (props: CardBackProps) {
     const ICON_SIZE_BACK = 14;
 
     return (
-        <div className="card-back">
+        <div className="card-back" onClick={onFlip}>
             {isLoading ?
                 <div className="loader"></div> :
                 <>
-                    <div className="card-back-header">
+                    <div className="card-back-header" onClick={(e) => e.stopPropagation()}>
                         <div className="card-back-subtitle">
                             {symbol} • {show1Year ? '1 year' : '30 days'}
                         </div>
                     </div>
 
-                    <div className="sparkline-container sparkline-container-back">
+                    <div className="sparkline-container sparkline-container-back" onClick={(e) => e.stopPropagation()}>
                         {historicalData && historicalData.length > 0 ?
                             <Sparkline
                                 data={historicalData}
@@ -442,13 +589,14 @@ function CardBack (props: CardBackProps) {
                         }
                     </div>
 
-                    <div className="card-back-toggle" onClick={onToggleHistory}>
+                    <div className="card-back-toggle" onClick={(e) => { e.stopPropagation(); onToggleHistory(e); }}>
                         {show1Year ? 'Show 30 days' : 'Show 1 year'}
                     </div>
 
                     {historicalData && historicalData.length >= MIN_DATA_POINTS &&
                         <div
                             className={`stock-change ${isHistoricalPositive ? 'positive' : 'negative'} card-back-perf`}
+                            onClick={(e) => e.stopPropagation()}
                         >
                             {isHistoricalPositive ?
                                 <ArrowUpIcon style={{ width: ICON_SIZE_BACK, height: ICON_SIZE_BACK, }} /> :
@@ -478,6 +626,12 @@ export function StockCard (props: StockCardProps) {
 
         return saved ? Number(saved) : null;
     });
+    const [investmentSum, setInvestmentSum,] = useState<number | null>(() => {
+        const saved = localStorage.getItem(`dashboard_investment_${symbol}`);
+
+        return saved ? Number(saved) : null;
+    });
+    const [isEditingInvestment, setIsEditingInvestment,] = useState(false);
 
     const handleTargetChange = (val: string) => {
         if (val === '') {
@@ -537,11 +691,6 @@ export function StockCard (props: StockCardProps) {
     return (
         <div
             className={`stock-card ${isFlipped ? 'is-flipped' : ''}`}
-            onClick={() => {
-                handleFlip().catch((err) => {
-                    console.error('Flip failed', err);
-                });
-            }}
         >
             <div className="card-inner">
                 <CardFront
@@ -551,6 +700,15 @@ export function StockCard (props: StockCardProps) {
                     setIsEditingTarget={setIsEditingTarget}
                     onTargetChange={handleTargetChange}
                     isTargetReached={!!isTargetReached}
+                    investmentSum={investmentSum}
+                    setInvestmentSum={setInvestmentSum}
+                    isEditingInvestment={isEditingInvestment}
+                    setIsEditingInvestment={setIsEditingInvestment}
+                    onFlip={() => {
+                        handleFlip().catch((err) => {
+                            console.error('Flip failed', err);
+                        });
+                    }}
                 />
                 <CardBack
                     symbol={symbol}
@@ -561,6 +719,11 @@ export function StockCard (props: StockCardProps) {
                     onToggleHistory={onToggleHistory}
                     targetPrice={targetPrice}
                     timezone={props.timezone}
+                    onFlip={() => {
+                        handleFlip().catch((err) => {
+                            console.error('Flip failed', err);
+                        });
+                    }}
                 />
             </div>
         </div>
