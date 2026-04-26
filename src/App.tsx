@@ -6,6 +6,8 @@ import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
 import type { StockQuote } from './types';
 
+const DEFAULT_REFRESH_RATE = 30;
+
 const getDefaultTickers = (): string[] => {
     interface ImportMetaWithEnv {
         env: {
@@ -24,14 +26,32 @@ const getDefaultTickers = (): string[] => {
 };
 
 function App () {
-    const [tickers, setTickers,] = useState<string[]>([]);
-    const [refreshRate, setRefreshRate,] = useState<number>(10);
+    const [tickers, setTickers,] = useState<string[]>(() => {
+        const stored = localStorage.getItem('dashboard_tickers');
+
+        return stored ? JSON.parse(stored) : getDefaultTickers();
+    });
+    const [refreshRate, setRefreshRate,] = useState<number>(() => {
+        const stored = localStorage.getItem('dashboard_refreshRate');
+
+        return stored ? Number(stored) : DEFAULT_REFRESH_RATE;
+    });
     const [quotes, setQuotes,] = useState<StockQuote[]>([]);
-    const [isLoading, setIsLoading,] = useState<boolean>(true);
+    const [isLoading, setIsLoading,] = useState<boolean>(() => {
+        // Only load if we have tickers
+        const stored = localStorage.getItem('dashboard_tickers');
+        const initialTickers = stored ? JSON.parse(stored) : getDefaultTickers();
+
+        return initialTickers.length > 0;
+    });
     const [isSettingsOpen, setIsSettingsOpen,] = useState<boolean>(false);
     const [hasError, setHasError,] = useState<boolean>(false);
     const [lastUpdated, setLastUpdated,] = useState<Date | null>(null);
-    const [timezone, setTimezone,] = useState<string>('Local');
+    const [timezone, setTimezone,] = useState<string>(() => {
+        const stored = localStorage.getItem('dashboard_timezone');
+
+        return stored ? stored : 'Local';
+    });
     const [isTeslaMode, setIsTeslaMode,] = useState<boolean>(false);
     const [resetKey, setResetKey,] = useState<number>(0);
     const [targetsUpdateKey, setTargetsUpdateKey,] = useState<number>(0);
@@ -136,37 +156,15 @@ function App () {
         return () => document.body.classList.remove('no-scroll');
     }, [isTeslaMode,]);
 
-    // Load state from localStorage on mount
-    useEffect(() => {
-        const storedTickers = localStorage.getItem('dashboard_tickers');
-        const storedRate = localStorage.getItem('dashboard_refreshRate');
-        const storedTimezone = localStorage.getItem('dashboard_timezone');
-
-        if (storedTickers) {
-            setTickers(JSON.parse(storedTickers));
-        } else {
-            // Default tickers
-            setTickers(getDefaultTickers());
-        }
-
-        if (storedRate) {
-            setRefreshRate(Number(storedRate));
-        }
-
-        if (storedTimezone) {
-            setTimezone(storedTimezone);
-        }
-    }, []);
-
     // Fetch data
     useEffect(() => {
-        if (tickers.length === 0) {
-            setQuotes([]);
-            setIsLoading(false);
-            return;
-        }
-
         const fetchData = async () => {
+            if (tickers.length === 0) {
+                setQuotes([]);
+                setIsLoading(false);
+                return;
+            }
+
             setIsLoading(true);
             setHasError(false);
             try {
@@ -186,21 +184,17 @@ function App () {
                     checkAlarms(results);
                 }
             } catch (error) {
-                console.error('Failed to fetch quotes:', error);
+                console.error('Failed to fetch stock quotes', error);
                 setHasError(true);
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchData().catch((err) => {
-            console.error('Initial fetch failed:', err);
-        });
+        fetchData().catch((err) => console.error('Fetch error:', err));
 
         const interval = setInterval(() => {
-            fetchData().catch((err) => {
-                console.error('Interval fetch failed:', err);
-            });
+            fetchData().catch((err) => console.error('Interval fetch failed:', err));
         }, refreshRate * 1000);
 
         return () => clearInterval(interval);
