@@ -1,7 +1,7 @@
 {
   "name": "black-orb",
   "version": "1.1.0",
-  "description": "Black Orb is a modern, lightweight and anonymous stock price tracking dashboard",
+  "description": "Black Orb is a lightweight and anonymous stock price tracking dashboard",
   "type": "module",
   "engines": {
     "node": ">=24.0.0"
@@ -25,8 +25,8 @@
   "scripts": {
     "dev": "vite",
     "dev:web": "VITE_WEB=true vite",
-    "build": "tsc && vite build && electron-builder",
-    "build:mac": "tsc && vite build && CSC_IDENTITY_AUTO_DISCOVER=false electron-builder --mac",
+    "build": "tsc && vite build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder",
+    "build:mac": "tsc && vite build && CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac",
     "build:win": "tsc && vite build && electron-builder --win",
     "build:linux": "tsc && vite build && electron-builder --linux",
     "install:all": "npm install --legacy-peer-deps",

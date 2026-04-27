@@ -19,6 +19,7 @@
     target: ["dmg"],
     artifactName: "${productName}-Mac-${version}-Installer.${ext}",
     category: "public.app-category.finance",
+    identity: null,
   },
   win: {
     target: [
