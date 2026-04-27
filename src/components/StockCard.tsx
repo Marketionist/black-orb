@@ -368,12 +368,43 @@ function CardFront (props: StockCardProps & {
                         {name}
                     </div> :
                     <div />}
+                <div className="stock-header-actions">
+                    {!isEditingTarget &&
+                        <button
+                            className={`icon-btn-small ${targetPrice === null ? 'icon-grey' : ''}`}
+                            onClick={handleBellClick}
+                            title={bellTitle}
+                            aria-label={bellTitle}
+                        >
+                            {(() => {
+                                if (targetPrice === null) {
+                                    return <BellIcon className="icon-inline" />;
+                                }
+                                return isMuted ?
+                                    <BellAlertIcon className="icon-inline" /> :
+                                    <BellSlashIcon className="icon-inline" />;
+                            })()}
+                        </button>
+                    }
+                    {investmentSum === null &&
+                        <button
+                            className="icon-btn-small icon-grey"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                setIsEditingInvestment(true);
+                            }}
+                            title="Calculate number of shares"
+                        >
+                            <CalculatorIcon className="icon-inline" />
+                        </button>
+                    }
+                </div>
             </div>
             <div className="stock-price stock-price-decorated" onClick={(e) => e.stopPropagation()}>
                 <div className="price-row">
                     <div className="price-display-wrapper">
                         {typeof price === 'number' ?
-                            <span className="metallic-gold">{`$${price.toFixed(2)}`}</span> :
+                            <span className="current-price-text metallic-gold">{`$${price.toFixed(2)}`}</span> :
                             <div className="na-container">
                                 <span className="metallic-gold">N/A</span>
                                 <button
@@ -466,33 +497,6 @@ function CardFront (props: StockCardProps & {
                                         </span>
                                     </span>
                                 }
-                                <button
-                                    className={`icon-btn-small ${targetPrice === null ? 'icon-grey' : ''}`}
-                                    onClick={handleBellClick}
-                                    title={bellTitle}
-                                    aria-label={bellTitle}
-                                >
-                                    {(() => {
-                                        if (targetPrice === null) {
-                                            return <BellIcon className="icon-inline" />;
-                                        }
-                                        return isMuted ?
-                                            <BellAlertIcon className="icon-inline" /> :
-                                            <BellSlashIcon className="icon-inline" />;
-                                    })()}
-                                </button>
-                                {investmentSum === null &&
-                                    <button
-                                        className="icon-btn-small icon-grey"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setIsEditingInvestment(true);
-                                        }}
-                                        title="Calculate number of shares"
-                                    >
-                                        <CalculatorIcon className="icon-inline" />
-                                    </button>
-                                }
                             </div>
                         }
                     </div>
@@ -561,7 +565,6 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
     const isHistoricalPositive = historicalChange >= 0;
     const CHART_WIDTH = 240;
     const CHART_HEIGHT_BACK = 80;
-    const ICON_SIZE_BACK = 14;
 
     return (
         <div className="card-back" onClick={onFlip}>
@@ -599,8 +602,8 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {isHistoricalPositive ?
-                                <ArrowUpIcon style={{ width: ICON_SIZE_BACK, height: ICON_SIZE_BACK, }} /> :
-                                <ArrowDownIcon style={{ width: ICON_SIZE_BACK, height: ICON_SIZE_BACK, }} />
+                                <ArrowUpIcon className="stat-arrow-icon" /> :
+                                <ArrowDownIcon className="stat-arrow-icon" />
                             }
                             <span>
                                 {Math.abs(absoluteChange).toFixed(2)} ({Math.abs(historicalChange).toFixed(2)}%)
