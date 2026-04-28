@@ -3,7 +3,6 @@
     --bg-secondary: #1f2126;
     --bg-card: rgba(22, 24, 28, 0.75);
     --text-primary: #f8fafc;
-    --text-secondary: #94a3b8;
     --text-muted: #64748b;
     --accent-primary: #1d4ed8;
     --accent-hover: #1e40af;
@@ -43,6 +42,30 @@
     padding: 0;
 }
 
+html,
+body {
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+#root {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-width: 400px;
+    overflow-x: hidden;
+    padding: 2rem;
+}
+
+/* Tesla mode scrollbar hide */
+.tesla-mode-container::-webkit-scrollbar {
+    display: none !important;
+}
+
+.tesla-mode-container {
+    scrollbar-width: none !important;
+}
+
 body {
     font-family:
         "Inter",
@@ -72,8 +95,6 @@ body {
             #0f1012 100%);
     background-attachment: fixed;
     color: var(--text-primary);
-    min-height: 100vh;
-    padding: 2rem;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -90,7 +111,6 @@ button {
     background: none;
     font-family: inherit;
     transition: var(--transition);
-    transform: translateZ(0);
 }
 
 .app-header {
@@ -121,8 +141,6 @@ button {
     -webkit-text-fill-color: transparent;
     color: var(--gold-deep-medium);
     display: inline-block;
-    will-change: transform;
-    transform: translate3d(0, 0, 0);
 }
 
 .metallic-gold svg {
@@ -142,11 +160,10 @@ button {
     flex-shrink: 0;
     cursor: pointer;
     transition: var(--transition);
-    transform: translateZ(0);
 }
 
 .icon-btn {
-    color: var(--gold-deep-medium);
+    color: var(--gold-deep-light);
     padding: 0.5rem;
     height: 40px;
     width: 40px;
@@ -240,7 +257,6 @@ button {
 .stock-card {
     perspective: 1200px;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    will-change: transform;
 }
 
 .stock-card:hover {
@@ -273,7 +289,6 @@ button {
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
     overflow: hidden;
-    transform: translateZ(0);
     isolation: isolate;
     container-type: inline-size;
 }
@@ -350,14 +365,14 @@ button {
 }
 
 .stock-name {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-size: 0.650rem;
+    color: var(--text-muted);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 48cqw;
     /* Stay on the left half of the card */
-    align-self: baseline;
+    align-self: center;
     min-width: 0;
 }
 
@@ -365,6 +380,23 @@ button {
     font-size: clamp(1.2rem, 8cqw, 2rem);
     font-weight: 800;
     margin-bottom: 0.5rem;
+}
+
+.stock-header-actions {
+    display: flex;
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    gap: 4px;
+    justify-self: end;
+}
+
+.stat-arrow-icon {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    -webkit-flex-shrink: 0;
+    -ms-flex-negative: 0;
 }
 
 .stock-change {
@@ -379,7 +411,6 @@ button {
     flex-shrink: 0;
     white-space: nowrap;
     justify-self: end;
-    transform: translateZ(0);
 }
 
 .stock-change.positive {
@@ -432,7 +463,7 @@ button {
 .modal-title {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
 .form-group {
@@ -442,7 +473,7 @@ button {
 .form-group label {
     display: block;
     font-size: 0.875rem;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     margin-bottom: 0.5rem;
 }
 
@@ -631,7 +662,7 @@ select:focus {
     justify-content: center;
     height: 200px;
     gap: 1rem;
-    color: var(--text-secondary);
+    color: var(--text-muted);
 }
 
 .last-updated {
@@ -657,7 +688,7 @@ select:focus {
 }
 
 .empty-state p {
-    color: var(--text-secondary);
+    color: var(--text-muted);
     margin-bottom: 1.5rem;
 }
 
@@ -707,12 +738,11 @@ select:focus {
 
 .sparkline-svg {
     overflow: visible;
-    will-change: transform;
 }
 
 .sparkline-path,
 .sparkline-dot {
-    filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0px 2px 3px rgba(0, 0, 0, 0.2));
 }
 
 .sparkline-hit-area {
@@ -737,9 +767,21 @@ select:focus {
     min-height: 48px;
 }
 
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
 .price-display-wrapper {
     flex: 1;
     min-width: 0;
+}
+
+.current-price-text {
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .sparkline-container {
@@ -762,13 +804,11 @@ select:focus {
     padding: 0.2rem 0;
     display: flex;
     align-items: center;
-    transform: translateZ(0);
 }
 
 .card-back-subtitle {
     font-size: 0.85rem;
-    color: var(--text-secondary);
-    transform: translateZ(0);
+    color: var(--text-muted);
 }
 
 .card-back-empty {
@@ -927,24 +967,27 @@ select:focus {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: calc(100vh - 140px);
+    height: 100%;
     width: 100%;
-    overflow: hidden;
+    overflow: hidden !important;
     animation: fadeIn 0.5s ease-out;
-    perspective: 1000px;
+    padding: 60px;
+    /* Room for glow */
 }
 
 .tesla-sphere {
     position: relative;
     width: 55vmin;
     height: 55vmin;
+    min-width: 280px;
+    min-height: 280px;
     border-radius: 50%;
     background: radial-gradient(circle at 30% 30%, #4a4a55, #121316, #000);
     box-shadow:
         inset -10px -10px 30px rgba(0, 0, 0, 0.9),
         inset 10px 10px 30px rgba(255, 255, 255, 0.2),
-        0 0 50px rgba(255, 215, 0, 0.4),
-        0 0 100px rgba(255, 215, 0, 0.2);
+        0 0 20px rgba(255, 215, 0, 0.2),
+        0 0 40px rgba(255, 215, 0, 0.1);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -970,38 +1013,63 @@ select:focus {
     height: 6vmin;
     margin-top: -3vmin;
     margin-left: -3vmin;
-    background: radial-gradient(circle, #fff, #fde047 40%, rgba(255, 215, 0, 0.8));
+    background: transparent;
     border-radius: 50%;
     box-shadow:
-        0 0 15px #fff,
-        0 0 30px #fde047,
-        0 0 50px rgba(255, 215, 0, 0.8),
-        inset 0 0 10px #fff;
+        0 0 10px rgba(253, 224, 71, 0.4),
+        0 0 20px rgba(180, 140, 0, 0.3),
+        inset 0 0 15px rgba(0, 0, 0, 0.8),
+        inset 0 0 5px rgba(255, 215, 0, 0.2);
     z-index: 20;
+    overflow: hidden;
+    opacity: 0.65;
+}
+
+.tesla-core::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: conic-gradient(from 0deg,
+            rgba(0, 0, 0, 0.9) 0deg,
+            rgba(253, 224, 71, 0.3) 90deg,
+            rgba(0, 0, 0, 0.9) 180deg,
+            rgba(180, 140, 0, 0.4) 270deg,
+            rgba(0, 0, 0, 0.9) 360deg);
+    animation: rotate-core 6s linear infinite;
+}
+
+.tesla-core::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(253, 224, 71, 0.4) 10%, rgba(0, 0, 0, 0.8) 70%);
 }
 
 .plasma-ray {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 50%;
-    /* Radiates from center to edge */
+    width: calc(50% - 3vmin);
+    /* Radiates from core wall to edge */
     height: 4px;
-    /* Straight line */
     margin-top: -2px;
-    /* Center it */
-    transform-origin: 0% 50%;
-    /* Pivot perfectly at center */
-    border-top: 4px solid #fff;
-    /* Thick lightning base */
+    margin-left: 3vmin;
+    transform-origin: -3vmin 50%;
+    background: linear-gradient(to bottom,
+            transparent 0%,
+            rgba(253, 224, 71, 0.8) 25%,
+            #fff 45%, #fff 55%,
+            rgba(253, 224, 71, 0.8) 75%,
+            transparent 100%);
+    box-shadow: 0 0 8px 1px #fde047;
     border-radius: 0;
-    /* Straight, no natural curves! Filter bends it organically */
     z-index: 5;
     pointer-events: none;
     opacity: 0;
-    will-change: transform, opacity;
-    backface-visibility: hidden;
-    transform: translateZ(0);
 }
 
 /* Gracefully dissipating point contact spot */
@@ -1022,97 +1090,111 @@ select:focus {
     /* Blur baked into gradients to bypass heavy spinning-compositor costs */
 }
 
+.ray-1,
+.ray-3,
+.ray-5,
+.ray-7 {
+    z-index: 30;
+}
+
+.ray-2,
+.ray-4,
+.ray-6,
+.ray-8 {
+    z-index: 5;
+}
+
 .ray-1 {
     animation: plasma-strike-1 7s ease-in-out infinite;
-    filter: url(#lightning-wobble-1) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-1) blur(0.5px);
 }
 
 .ray-2 {
     animation: plasma-strike-2 8.5s ease-in-out infinite;
-    filter: url(#lightning-wobble-2) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-2) blur(0.5px);
 }
 
 .ray-3 {
     animation: plasma-strike-3 6.8s ease-in-out infinite;
-    filter: url(#lightning-wobble-3) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-3) blur(0.5px);
 }
 
 .ray-4 {
     animation: plasma-strike-4 9.2s ease-in-out infinite;
-    filter: url(#lightning-wobble-4) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-4) blur(0.5px);
 }
 
 .ray-5 {
     animation: plasma-strike-5 7.5s ease-in-out infinite;
-    filter: url(#lightning-wobble-5) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-5) blur(0.5px);
 }
 
 .ray-6 {
     animation: plasma-strike-6 8.8s ease-in-out infinite;
-    filter: url(#lightning-wobble-6) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-6) blur(0.5px);
 }
 
 .ray-7 {
     animation: plasma-strike-7 9.5s ease-in-out infinite;
-    filter: url(#lightning-wobble-7) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-7) blur(0.5px);
 }
 
 .ray-8 {
     animation: plasma-strike-8 7.2s ease-in-out infinite;
-    filter: url(#lightning-wobble-8) drop-shadow(0 0 8px #fde047);
+    filter: url(#lightning-wobble-8) blur(0.5px);
 }
 
 /* Constantly visible and gently dissolving transitions */
 @keyframes plasma-strike-1 {
     0% {
-        transform: rotate3d(1, 1, 0, 0deg) rotateZ(0deg) scaleX(0.1);
+        transform: rotate(0deg) scaleX(0.1);
         opacity: 0;
     }
 
     5% {
-        transform: rotate3d(1, 1, 0, 45deg) rotateZ(60deg) scaleX(1);
+        transform: rotate(60deg) scaleX(1);
         opacity: 0.95;
     }
 
     90% {
-        transform: rotate3d(1, 1, 0, 135deg) rotateZ(180deg) scaleX(1);
+        transform: rotate(180deg) scaleX(1);
         opacity: 0.9;
     }
 
     96% {
-        transform: rotate3d(1, 1, 0, 150deg) rotateZ(200deg) scaleX(1.05);
+        transform: rotate(200deg) scaleX(1.05);
         opacity: 0;
     }
 
     100% {
-        transform: rotate3d(1, 1, 0, 180deg) rotateZ(220deg) scaleX(0.1);
+        transform: rotate(220deg) scaleX(0.1);
         opacity: 0;
     }
 }
 
 @keyframes plasma-strike-2 {
     0% {
-        transform: rotate3d(-1, 0.5, 1, 0deg) rotateZ(0deg) scaleX(0.1);
+        transform: rotate(0deg) scaleX(0.1);
         opacity: 0;
     }
 
     6% {
-        transform: rotate3d(-1, 0.5, 1, 60deg) rotateZ(-45deg) scaleX(1);
+        transform: rotate(-45deg) scaleX(1);
         opacity: 0.9;
     }
 
     92% {
-        transform: rotate3d(-1, 0.5, 1, 180deg) rotateZ(-120deg) scaleX(1);
+        transform: rotate(-120deg) scaleX(1);
         opacity: 0.85;
     }
 
     98% {
-        transform: rotate3d(-1, 0.5, 1, 210deg) rotateZ(-140deg) scaleX(1.05);
+        transform: rotate(-140deg) scaleX(1.05);
         opacity: 0;
     }
 
     100% {
-        transform: rotate3d(-1, 0.5, 1, 230deg) rotateZ(-160deg) scaleX(0.1);
+        transform: rotate(-160deg) scaleX(0.1);
         opacity: 0;
     }
 }
@@ -1306,16 +1388,16 @@ select:focus {
     overflow: visible;
 }
 
-.target-price-container::before {
+/* Divider at horizontal center */
+/* .target-price-container::before {
     content: "";
     position: absolute;
     left: 50%;
-    /* Divider at horizontal center */
     top: -5.5rem;
     bottom: -1.0rem;
     width: 1px;
     border-left: 1px dashed rgba(255, 255, 255, 0.1);
-}
+} */
 
 .target-price-form {
     display: flex;
@@ -1334,16 +1416,12 @@ select:focus {
 }
 
 .target-price-text {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-size: 0.650rem;
+    color: var(--text-muted);
     transition: var(--transition);
     transform: translateZ(0);
     font-weight: normal;
     padding: 2px 6px;
-    border-radius: 6px;
-    background: rgba(18, 19, 22, 0.4);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
 }
 
 .target-price-text.target-reached {
@@ -1351,8 +1429,8 @@ select:focus {
 }
 
 .target-price-value {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-size: 0.650rem;
+    color: var(--text-muted);
     border-bottom: 1px dashed var(--gold-deep-medium);
     font-weight: normal;
     cursor: pointer;
@@ -1377,10 +1455,6 @@ select:focus {
 .header-icon {
     width: 20px;
     height: 20px;
-}
-
-.hidden-svg-defs {
-    position: absolute;
 }
 
 .form-group-mb {
@@ -1442,8 +1516,8 @@ select:focus {
 }
 
 .investment-result {
-    font-size: 0.875rem;
-    color: var(--text-secondary);
+    font-size: 0.650rem;
+    color: var(--text-muted);
     transition: color 0.3s ease;
     text-align: right;
     line-height: 1.4;
@@ -1456,8 +1530,14 @@ select:focus {
     cursor: pointer;
 }
 
-.investment-result:hover {
-    color: var(--text-secondary);
+@keyframes rotate-core {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .investment-leftover {
