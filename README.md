@@ -2,21 +2,21 @@
 
 Black Orb is a lightweight and anonymous stock price tracking dashboard.
 It does not require any credentials or logging in - just add stock tickers and
-start tracking them. Built using Electron, React, and TypeScript, it offers a beautifully designed interface with glassmorphism and a premium dark mode
-aesthetic. Real-time stock data is seamlessly fetched using the Yahoo Finance
-API via IPC to bypass browser CORS constraints, providing accurate, reliable
-market data.
+start tracking them. It offers a beautifully designed interface with
+glassmorphism and a premium dark mode aesthetic. Real-time stock data is
+seamlessly fetched using the Yahoo Finance API via IPC to bypass browser CORS
+constraints, providing accurate, reliable market data.
 
 ## Features
 
 - **Anonymous**: stores your settings, target prices and ticker list locally in
 localStorage on your machine without needing a database or sharing them with
 third parties.
-- **Real-time Data**: fetch the latest quotes without limits using Yahoo
+- **Real-time data**: fetches the latest quotes without limits using Yahoo
 Finance.
-- **Black Aesthetics**: enjoy a beautifully designed, premium user interface
+- **Black aesthetics**: enjoy a beautifully designed, premium user interface
 with interactive "gold on black" highlights.
-- **Cross-platform**: readily packages for both Windows and Mac using
+- **Cross-platform**: readily packages for Mac, Windows and Linux using
 electron-builder.
 
 > Note: due to new Apple restrictions it will not let you run the app without
@@ -36,7 +36,8 @@ electron-builder.
 
 ### Customizing Default Stocks
 
-You can customize the default list of stocks loaded on the first run (or when resetting storage) by using an environment variable.
+You can customize the default list of stocks loaded on the first run (or when
+resetting storage) by using an environment variable.
 
 1. Create a `.env` file in the root of the project.
 2. Add the `STOCKS` variable with a comma-separated list of ticker symbols:
