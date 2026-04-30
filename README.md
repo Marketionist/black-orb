@@ -1,6 +1,6 @@
 # Black Orb
 
-Black Orb is a modern, lightweight and anonymous stock price tracking dashboard.
+Black Orb is a lightweight and anonymous stock price tracking dashboard.
 It does not require any credentials or logging in - just add stock tickers and
 start tracking them. Built using Electron, React, and TypeScript, it offers a beautifully designed interface with glassmorphism and a premium dark mode
 aesthetic. Real-time stock data is seamlessly fetched using the Yahoo Finance

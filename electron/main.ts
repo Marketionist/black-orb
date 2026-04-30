@@ -1,4 +1,11 @@
 import { app, BrowserWindow, ipcMain, shell } from 'electron';
+
+// Disable GPU early to prevent "non-existent mailbox" errors in command buffer
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+
 import yf from './yahoo-finance';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -47,6 +54,8 @@ let win: BrowserWindow | null;
 function createWindow () {
     win = new BrowserWindow({
         icon: path.join(process.env.VITE_PUBLIC, 'logo.png'),
+        minWidth: 400,
+        minHeight: 650,
         webPreferences: {
             preload: path.join(__dirname, 'preload.mjs'),
         },

@@ -271,7 +271,7 @@ function App () {
 
     const renderTeslaMode = () =>
         <div className="tesla-mode-container">
-            <svg width="0" height="0" className="hidden-svg-defs">
+            <svg width="1" height="1" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', }}>
                 {[1, 2, 3, 4, 5, 6, 7, 8,].map((i) => {
                     const patterns = [
                         '0.01;0.02;0.015;0.025;0.01',
@@ -293,10 +293,11 @@ function App () {
                         <filter
                             id={`lightning-wobble-${i}`}
                             key={i}
-                            x="-10%"
-                            y="-50%"
-                            width="120%"
-                            height="200%"
+                            x="-500"
+                            y="-500"
+                            width="1000"
+                            height="1000"
+                            filterUnits="userSpaceOnUse"
                             colorInterpolationFilters="sRGB"
                         >
                             <feTurbulence
