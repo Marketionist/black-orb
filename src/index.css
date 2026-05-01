@@ -773,12 +773,9 @@ main {
     flex-direction: column;
 }
 
-.price-display-wrapper {
-    flex: 1;
+.current-price-container {
+    flex: 0 1 auto;
     min-width: 0;
-}
-
-.current-price-text {
     user-select: text;
     -webkit-user-select: text;
     cursor: text;
@@ -1374,18 +1371,13 @@ main {
 }
 
 .target-price-container {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%);
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 4px;
     z-index: 20;
-    padding-right: 8px;
     overflow: visible;
+    flex-shrink: 0;
 }
 
 /* Divider at horizontal center */
