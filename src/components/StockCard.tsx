@@ -402,9 +402,9 @@ function CardFront (props: StockCardProps & {
             </div>
             <div className="stock-price stock-price-decorated" onClick={(e) => e.stopPropagation()}>
                 <div className="price-row">
-                    <div className="price-display-wrapper">
+                    <div className="current-price-container">
                         {typeof price === 'number' ?
-                            <span className="current-price-text metallic-gold">{`$${price.toFixed(2)}`}</span> :
+                            <span className="metallic-gold">{`$${price.toFixed(2)}`}</span> :
                             <div className="na-container">
                                 <span className="metallic-gold">N/A</span>
                                 <button
