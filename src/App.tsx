@@ -4,6 +4,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
+import { TeslaCore } from './components/TeslaCore';
 import type { StockQuote } from './types';
 
 const DEFAULT_REFRESH_RATE = 30;
@@ -271,70 +272,9 @@ function App () {
 
     const renderTeslaMode = () =>
         <div className="tesla-mode-container">
-            <svg width="1" height="1" style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', }}>
-                {[1, 2, 3, 4, 5, 6, 7, 8,].map((i) => {
-                    const patterns = [
-                        '0.01;0.02;0.015;0.025;0.01',
-                        '0.03;0.015;0.035;0.02;0.03',
-                        '0.015;0.035;0.01;0.03;0.015',
-                        '0.02;0.01;0.04;0.015;0.02',
-                        '0.01;0.03;0.02;0.04;0.01',
-                        '0.035;0.015;0.03;0.01;0.035',
-                        '0.015;0.04;0.015;0.03;0.015',
-                        '0.03;0.01;0.02;0.04;0.03',
-                    ];
-                    const seedMultiplier = 42;
-                    const baseDuration = 7.5;
-                    const durationMultiplier = 2.5;
-                    const baseScale = 12;
-                    const scaleMultiplier = 1.5;
-
-                    return (
-                        <filter
-                            id={`lightning-wobble-${i}`}
-                            key={i}
-                            x="-500"
-                            y="-500"
-                            width="1000"
-                            height="1000"
-                            filterUnits="userSpaceOnUse"
-                            colorInterpolationFilters="sRGB"
-                        >
-                            <feTurbulence
-                                type="fractalNoise"
-                                baseFrequency="0.02"
-                                numOctaves="2"
-                                seed={i * seedMultiplier}
-                                result="noise"
-                            >
-                                <animate
-                                    attributeName="baseFrequency"
-                                    values={patterns[i - 1]}
-                                    dur={`${baseDuration + i * durationMultiplier}s`}
-                                    repeatCount="indefinite"
-                                />
-                            </feTurbulence>
-                            <feDisplacementMap
-                                in="SourceGraphic"
-                                in2="noise"
-                                scale={baseScale + i * scaleMultiplier}
-                                xChannelSelector="R"
-                                yChannelSelector="G"
-                            />
-                        </filter>
-                    );
-                })}
-            </svg>
             <div className="tesla-sphere">
+                <TeslaCore />
                 <div className="tesla-core"></div>
-                <div className="plasma-ray ray-1"></div>
-                <div className="plasma-ray ray-2"></div>
-                <div className="plasma-ray ray-3"></div>
-                <div className="plasma-ray ray-4"></div>
-                <div className="plasma-ray ray-5"></div>
-                <div className="plasma-ray ray-6"></div>
-                <div className="plasma-ray ray-7"></div>
-                <div className="plasma-ray ray-8"></div>
             </div>
         </div>;
 
