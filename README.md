@@ -76,7 +76,7 @@ replacement, execute:
     ```bash
     npm run dev
     ```
-To run it as a web server on http://localhost:5173/, execute:
+    To run it as a web server on http://localhost:5173/, execute:
 
     ```bash
     npm run dev:web
@@ -114,7 +114,7 @@ The compiled installer will be located under the `release/` directory.
 To package the application as a Linux `.AppImage` installer:
 
 ```bash
-npm run build:linux
+npm run build:lin
 ```
 
 The compiled installer will be located under the `release/` directory.
