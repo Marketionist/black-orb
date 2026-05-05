@@ -5,6 +5,7 @@ import {
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
 import { TeslaCore } from './components/TeslaCore';
+import { TeslaClockFrame } from './components/TeslaClockFrame';
 import type { StockQuote } from './types';
 
 const DEFAULT_REFRESH_RATE = 30;
@@ -53,7 +54,7 @@ function App () {
 
         return stored ? stored : 'Local';
     });
-    const [isTeslaMode, setIsTeslaMode,] = useState<boolean>(false);
+    const [teslaMode, setTeslaMode,] = useState<number>(0);
     const [resetKey, setResetKey,] = useState<number>(0);
     const [targetsUpdateKey, setTargetsUpdateKey,] = useState<number>(0);
     const [tickerMutes, setTickerMutes,] = useState<Record<string, boolean>>(() => {
@@ -139,7 +140,7 @@ function App () {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.code === 'Space' && e.target === document.body) {
                 e.preventDefault();
-                setIsTeslaMode((prev) => !prev);
+                setTeslaMode((prev) => (prev + 1) % 3);
             }
         };
 
@@ -149,13 +150,13 @@ function App () {
 
     // Prevent scrolling in Tesla Mode
     useEffect(() => {
-        if (isTeslaMode) {
+        if (teslaMode > 0) {
             document.body.classList.add('no-scroll');
         } else {
             document.body.classList.remove('no-scroll');
         }
         return () => document.body.classList.remove('no-scroll');
-    }, [isTeslaMode,]);
+    }, [teslaMode,]);
 
     // Fetch data
     useEffect(() => {
@@ -272,9 +273,12 @@ function App () {
 
     const renderTeslaMode = () =>
         <div className="tesla-mode-container">
-            <div className="tesla-sphere">
-                <TeslaCore />
-                <div className="tesla-core"></div>
+            <div className="tesla-clock-wrapper">
+                {teslaMode === 2 && <TeslaClockFrame timezone={timezone} />}
+                <div className="tesla-sphere">
+                    <TeslaCore />
+                    <div className="tesla-core"></div>
+                </div>
             </div>
         </div>;
 
@@ -362,11 +366,11 @@ function App () {
     return (
         <>
             <header className="app-header">
-                <h1 className="app-title" onClick={() => setIsTeslaMode(!isTeslaMode)}>
+                <h1 className="app-title" onClick={() => setTeslaMode((prev) => (prev + 1) % 3)}>
                     <img
                         src="./logo.png"
                         alt="Black Orb logo"
-                        className={`app-logo ${isTeslaMode ? 'logo-tesla-glow' : ''}`}
+                        className={`app-logo ${teslaMode > 0 ? 'logo-tesla-glow' : ''}`}
                     />
                 </h1>
                 <div className="header-actions">
@@ -424,12 +428,13 @@ function App () {
                 </div>
             </header>
 
-            <main>{isTeslaMode ? renderTeslaMode() : renderDashboard()}</main>
+            <main>{teslaMode > 0 ? renderTeslaMode() : renderDashboard()}</main>
 
-            {!isTeslaMode && lastUpdated && quotes.length > 0 &&
+            {teslaMode === 0 && lastUpdated && quotes.length > 0 &&
                 <div className="last-updated">
                     Last updated: {lastUpdated.toLocaleTimeString(undefined, {
                         timeZone: timezone === 'Local' ? undefined : timezone,
+                        hour12: false,
                     })}{' '}
                     (Updates every {refreshRate}s) | {renderTimezoneHint()}
                 </div>
