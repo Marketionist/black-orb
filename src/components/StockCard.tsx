@@ -292,6 +292,105 @@ function InvestmentSection ({
     return null;
 }
 
+interface TargetPriceSectionProps {
+    isEditingTarget: boolean;
+    setIsEditingTarget: (v: boolean) => void;
+    onTargetChange: (v: string) => void;
+    targetPrice: number | null;
+    isTargetReached: boolean;
+}
+
+function TargetPriceSection (props: TargetPriceSectionProps) {
+    const {
+        isEditingTarget, setIsEditingTarget, onTargetChange,
+        targetPrice, isTargetReached,
+    } = props;
+
+    if (isEditingTarget) {
+        return (
+            <form
+                className="target-price-form"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const val = formData.get('target') as string;
+
+                    setIsEditingTarget(false);
+                    onTargetChange(val);
+                }}
+            >
+                <input
+                    type="number"
+                    name="target"
+                    step="any"
+                    className="target-input"
+                    placeholder="Target price"
+                    defaultValue={targetPrice ?? ''}
+                    onBlur={(e) => {
+                        setTimeout(() => {
+                            const active = document.activeElement as HTMLElement;
+
+                            if (!active || !active.closest('.target-price-container')) {
+                                setIsEditingTarget(false);
+                                if (e.target.value) {
+                                    onTargetChange(e.target.value);
+                                }
+                            }
+                        }, BLUR_TIMEOUT_MS);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                            setIsEditingTarget(false);
+                        }
+                    }}
+                    autoFocus
+                />
+                <button
+                    type="submit"
+                    className="icon-btn-small"
+                    title="Save target price"
+                    aria-label="Save target price"
+                    onMouseDown={(e) => e.preventDefault()}
+                >
+                    <CheckIcon className="icon-inline" />
+                </button>
+                <button
+                    type="button"
+                    className="icon-btn-small btn-remove"
+                    title="Remove target price"
+                    aria-label="Remove target price"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                        setIsEditingTarget(false);
+                        onTargetChange('');
+                    }}
+                >
+                    <TrashIcon className="icon-inline" />
+                </button>
+            </form>
+        );
+    }
+
+    return (
+        <div className="target-price-display">
+            {targetPrice !== null &&
+                <span className={`target-price-text ${
+                    isTargetReached ? 'target-reached metallic-gold' : ''
+                }`}>
+                    $
+                    <span
+                        className={`target-price-value ${isTargetReached ? 'metallic-gold' : ''}`}
+                        onClick={() => setIsEditingTarget(true)}
+                        title="Edit target price"
+                    >
+                        {targetPrice?.toFixed(2)}
+                    </span>
+                </span>
+            }
+        </div>
+    );
+}
+
 function CardFront (props: StockCardProps & {
     targetPrice: number | null;
     isEditingTarget: boolean;
@@ -409,82 +508,13 @@ function CardFront (props: StockCardProps & {
                     </div>
 
                     <div className="target-price-container" onClick={(e) => e.stopPropagation()}>
-                        {isEditingTarget ?
-                            <form
-                                className="target-price-form"
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    const val = formData.get('target') as string;
-
-                                    setIsEditingTarget(false);
-                                    onTargetChange(val);
-                                }}
-                            >
-                                <input
-                                    type="number"
-                                    name="target"
-                                    step="any"
-                                    className="target-input"
-                                    placeholder="Target price"
-                                    defaultValue={targetPrice ?? ''}
-                                    onBlur={(e) => {
-                                        setTimeout(() => {
-                                            const active = document.activeElement as HTMLElement;
-
-                                            if (!active || !active.closest('.target-price-container')) {
-                                                setIsEditingTarget(false);
-                                                if (e.target.value) {
-                                                    onTargetChange(e.target.value);
-                                                }
-                                            }
-                                        }, BLUR_TIMEOUT_MS);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Escape') {
-                                            setIsEditingTarget(false);
-                                        }
-                                    }}
-                                    autoFocus
-                                />
-                                <button
-                                    type="submit"
-                                    className="icon-btn-small"
-                                    title="Save target price"
-                                    aria-label="Save target price"
-                                    onMouseDown={(e) => e.preventDefault()}
-                                >
-                                    <CheckIcon className="icon-inline" />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="icon-btn-small btn-remove"
-                                    title="Remove target price"
-                                    aria-label="Remove target price"
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    onClick={() => {
-                                        setIsEditingTarget(false);
-                                        onTargetChange('');
-                                    }}
-                                >
-                                    <TrashIcon className="icon-inline" />
-                                </button>
-                            </form> :
-                            <div className="target-price-display">
-                                {targetPrice !== null &&
-                                    <span className={`target-price-text ${isTargetReached ? 'target-reached metallic-gold' : ''}`}>
-                                        $
-                                        <span
-                                            className={`target-price-value ${isTargetReached ? 'metallic-gold' : ''}`}
-                                            onClick={() => setIsEditingTarget(true)}
-                                            title="Edit target price"
-                                        >
-                                            {targetPrice?.toFixed(2)}
-                                        </span>
-                                    </span>
-                                }
-                            </div>
-                        }
+                        <TargetPriceSection
+                            isEditingTarget={isEditingTarget}
+                            setIsEditingTarget={setIsEditingTarget}
+                            onTargetChange={onTargetChange}
+                            targetPrice={targetPrice}
+                            isTargetReached={isTargetReached}
+                        />
                     </div>
                 </div>
 
