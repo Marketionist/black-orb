@@ -97,6 +97,7 @@ function Sparkline ({
         const options: Intl.DateTimeFormatOptions = {
             hour: 'numeric',
             minute: '2-digit',
+            hour12: false,
             ...tzOptions,
         };
 
@@ -105,7 +106,6 @@ function Sparkline ({
 
     return (
         <svg
-            width="100%"
             viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`}
             className="sparkline-svg"
         >
@@ -113,31 +113,25 @@ function Sparkline ({
                 <>
                     <polyline
                         points={`0,0 0,${height} ${width},${height}`}
-                        fill="none"
-                        stroke="rgba(255,255,255,0.15)"
-                        strokeWidth="1"
+                        className="sparkline-axes-line"
                     />
-                    <text x="-4" y="4" fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x="-4" y="4" className="sparkline-axis-label sparkline-axis-label-end">
                         ${max.toFixed(2)}
                     </text>
-                    <text x="-4" y={height} fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x="-4" y={height} className="sparkline-axis-label sparkline-axis-label-end">
                         ${min.toFixed(2)}
                     </text>
-                    <text x="0" y={height + 10} fill="var(--text-muted)" fontSize="8" textAnchor="start">
+                    <text x="0" y={height + 10} className="sparkline-axis-label sparkline-axis-label-start">
                         {formatDate(data[0].date)}
                     </text>
-                    <text x={width} y={height + 10} fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x={width} y={height + 10} className="sparkline-axis-label sparkline-axis-label-end">
                         {formatDate(data[data.length - 1].date)}
                     </text>
                 </>
             }
             <polyline
                 points={polylinePoints}
-                fill="none"
                 stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
                 className="sparkline-path"
             />
             {points.map((p, i) =>
@@ -147,8 +141,6 @@ function Sparkline ({
                     cy={p.y}
                     r="2.5"
                     fill={color}
-                    stroke="rgba(18, 19, 22, 0.8)"
-                    strokeWidth="0.5"
                     className="sparkline-dot"
                 />
             )}
@@ -158,13 +150,11 @@ function Sparkline ({
                     cx={p.x}
                     cy={p.y}
                     r="6"
-                    fill="transparent"
-                    stroke="transparent"
                     className="sparkline-hit-area"
                 >
                     <title>{`Price: $${p.val.close.toFixed(2)}\nDate: ${new Date(
                         p.val.date
-                    ).toLocaleString(undefined, tzOptions)}`}</title>
+                    ).toLocaleString(undefined, { ...tzOptions, hour12: false, })}`}</title>
                 </circle>
             )}
             {targetY !== null &&
@@ -174,17 +164,13 @@ function Sparkline ({
                         y1={targetY}
                         x2={width}
                         y2={targetY}
-                        stroke="var(--gold-deep-medium, #b8860b)"
-                        strokeWidth="1"
-                        strokeDasharray="4 4"
+                        className="sparkline-target-line"
                     />
                     {showAxes && hasTarget &&
                         <text
                             x="-4"
                             y={targetY + 3}
-                            fill="var(--gold-deep-medium, #b8860b)"
-                            fontSize="8"
-                            textAnchor="end"
+                            className="sparkline-target-label"
                         >
                             ${targetPrice?.toFixed(2)}
                         </text>
@@ -486,10 +472,10 @@ function CardFront (props: StockCardProps & {
                             </form> :
                             <div className="target-price-display">
                                 {targetPrice !== null &&
-                                    <span className={`target-price-text ${isTargetReached ? 'target-reached' : ''}`}>
+                                    <span className={`target-price-text ${isTargetReached ? 'target-reached metallic-gold' : ''}`}>
                                         $
                                         <span
-                                            className="target-price-value"
+                                            className={`target-price-value ${isTargetReached ? 'metallic-gold' : ''}`}
                                             onClick={() => setIsEditingTarget(true)}
                                             title="Edit target price"
                                         >
