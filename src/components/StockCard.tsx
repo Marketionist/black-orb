@@ -97,6 +97,7 @@ function Sparkline ({
         const options: Intl.DateTimeFormatOptions = {
             hour: 'numeric',
             minute: '2-digit',
+            hour12: false,
             ...tzOptions,
         };
 
@@ -105,7 +106,6 @@ function Sparkline ({
 
     return (
         <svg
-            width="100%"
             viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`}
             className="sparkline-svg"
         >
@@ -113,31 +113,25 @@ function Sparkline ({
                 <>
                     <polyline
                         points={`0,0 0,${height} ${width},${height}`}
-                        fill="none"
-                        stroke="rgba(255,255,255,0.15)"
-                        strokeWidth="1"
+                        className="sparkline-axes-line"
                     />
-                    <text x="-4" y="4" fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x="-4" y="4" className="sparkline-axis-label sparkline-axis-label-end">
                         ${max.toFixed(2)}
                     </text>
-                    <text x="-4" y={height} fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x="-4" y={height} className="sparkline-axis-label sparkline-axis-label-end">
                         ${min.toFixed(2)}
                     </text>
-                    <text x="0" y={height + 10} fill="var(--text-muted)" fontSize="8" textAnchor="start">
+                    <text x="0" y={height + 10} className="sparkline-axis-label sparkline-axis-label-start">
                         {formatDate(data[0].date)}
                     </text>
-                    <text x={width} y={height + 10} fill="var(--text-muted)" fontSize="8" textAnchor="end">
+                    <text x={width} y={height + 10} className="sparkline-axis-label sparkline-axis-label-end">
                         {formatDate(data[data.length - 1].date)}
                     </text>
                 </>
             }
             <polyline
                 points={polylinePoints}
-                fill="none"
                 stroke={color}
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
                 className="sparkline-path"
             />
             {points.map((p, i) =>
@@ -147,8 +141,6 @@ function Sparkline ({
                     cy={p.y}
                     r="2.5"
                     fill={color}
-                    stroke="rgba(18, 19, 22, 0.8)"
-                    strokeWidth="0.5"
                     className="sparkline-dot"
                 />
             )}
@@ -158,13 +150,11 @@ function Sparkline ({
                     cx={p.x}
                     cy={p.y}
                     r="6"
-                    fill="transparent"
-                    stroke="transparent"
                     className="sparkline-hit-area"
                 >
                     <title>{`Price: $${p.val.close.toFixed(2)}\nDate: ${new Date(
                         p.val.date
-                    ).toLocaleString(undefined, tzOptions)}`}</title>
+                    ).toLocaleString(undefined, { ...tzOptions, hour12: false, })}`}</title>
                 </circle>
             )}
             {targetY !== null &&
@@ -174,17 +164,13 @@ function Sparkline ({
                         y1={targetY}
                         x2={width}
                         y2={targetY}
-                        stroke="var(--gold-deep-medium, #b8860b)"
-                        strokeWidth="1"
-                        strokeDasharray="4 4"
+                        className="sparkline-target-line"
                     />
                     {showAxes && hasTarget &&
                         <text
                             x="-4"
                             y={targetY + 3}
-                            fill="var(--gold-deep-medium, #b8860b)"
-                            fontSize="8"
-                            textAnchor="end"
+                            className="sparkline-target-label"
                         >
                             ${targetPrice?.toFixed(2)}
                         </text>
@@ -306,6 +292,105 @@ function InvestmentSection ({
     return null;
 }
 
+interface TargetPriceSectionProps {
+    isEditingTarget: boolean;
+    setIsEditingTarget: (v: boolean) => void;
+    onTargetChange: (v: string) => void;
+    targetPrice: number | null;
+    isTargetReached: boolean;
+}
+
+function TargetPriceSection (props: TargetPriceSectionProps) {
+    const {
+        isEditingTarget, setIsEditingTarget, onTargetChange,
+        targetPrice, isTargetReached,
+    } = props;
+
+    if (isEditingTarget) {
+        return (
+            <form
+                className="target-price-form"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    const formData = new FormData(e.currentTarget);
+                    const val = formData.get('target') as string;
+
+                    setIsEditingTarget(false);
+                    onTargetChange(val);
+                }}
+            >
+                <input
+                    type="number"
+                    name="target"
+                    step="any"
+                    className="target-input"
+                    placeholder="Target price"
+                    defaultValue={targetPrice ?? ''}
+                    onBlur={(e) => {
+                        setTimeout(() => {
+                            const active = document.activeElement as HTMLElement;
+
+                            if (!active || !active.closest('.target-price-container')) {
+                                setIsEditingTarget(false);
+                                if (e.target.value) {
+                                    onTargetChange(e.target.value);
+                                }
+                            }
+                        }, BLUR_TIMEOUT_MS);
+                    }}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Escape') {
+                            setIsEditingTarget(false);
+                        }
+                    }}
+                    autoFocus
+                />
+                <button
+                    type="submit"
+                    className="icon-btn-small"
+                    title="Save target price"
+                    aria-label="Save target price"
+                    onMouseDown={(e) => e.preventDefault()}
+                >
+                    <CheckIcon className="icon-inline" />
+                </button>
+                <button
+                    type="button"
+                    className="icon-btn-small btn-remove"
+                    title="Remove target price"
+                    aria-label="Remove target price"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => {
+                        setIsEditingTarget(false);
+                        onTargetChange('');
+                    }}
+                >
+                    <TrashIcon className="icon-inline" />
+                </button>
+            </form>
+        );
+    }
+
+    return (
+        <div className="target-price-display">
+            {targetPrice !== null &&
+                <span className={`target-price-text ${
+                    isTargetReached ? 'target-reached metallic-gold' : ''
+                }`}>
+                    $
+                    <span
+                        className={`target-price-value ${isTargetReached ? 'metallic-gold' : ''}`}
+                        onClick={() => setIsEditingTarget(true)}
+                        title="Edit target price"
+                    >
+                        {targetPrice?.toFixed(2)}
+                    </span>
+                </span>
+            }
+        </div>
+    );
+}
+
 function CardFront (props: StockCardProps & {
     targetPrice: number | null;
     isEditingTarget: boolean;
@@ -423,82 +508,13 @@ function CardFront (props: StockCardProps & {
                     </div>
 
                     <div className="target-price-container" onClick={(e) => e.stopPropagation()}>
-                        {isEditingTarget ?
-                            <form
-                                className="target-price-form"
-                                onSubmit={(e) => {
-                                    e.preventDefault();
-                                    const formData = new FormData(e.currentTarget);
-                                    const val = formData.get('target') as string;
-
-                                    setIsEditingTarget(false);
-                                    onTargetChange(val);
-                                }}
-                            >
-                                <input
-                                    type="number"
-                                    name="target"
-                                    step="any"
-                                    className="target-input"
-                                    placeholder="Target price"
-                                    defaultValue={targetPrice ?? ''}
-                                    onBlur={(e) => {
-                                        setTimeout(() => {
-                                            const active = document.activeElement as HTMLElement;
-
-                                            if (!active || !active.closest('.target-price-container')) {
-                                                setIsEditingTarget(false);
-                                                if (e.target.value) {
-                                                    onTargetChange(e.target.value);
-                                                }
-                                            }
-                                        }, BLUR_TIMEOUT_MS);
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (e.key === 'Escape') {
-                                            setIsEditingTarget(false);
-                                        }
-                                    }}
-                                    autoFocus
-                                />
-                                <button
-                                    type="submit"
-                                    className="icon-btn-small"
-                                    title="Save target price"
-                                    aria-label="Save target price"
-                                    onMouseDown={(e) => e.preventDefault()}
-                                >
-                                    <CheckIcon className="icon-inline" />
-                                </button>
-                                <button
-                                    type="button"
-                                    className="icon-btn-small btn-remove"
-                                    title="Remove target price"
-                                    aria-label="Remove target price"
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    onClick={() => {
-                                        setIsEditingTarget(false);
-                                        onTargetChange('');
-                                    }}
-                                >
-                                    <TrashIcon className="icon-inline" />
-                                </button>
-                            </form> :
-                            <div className="target-price-display">
-                                {targetPrice !== null &&
-                                    <span className={`target-price-text ${isTargetReached ? 'target-reached' : ''}`}>
-                                        $
-                                        <span
-                                            className="target-price-value"
-                                            onClick={() => setIsEditingTarget(true)}
-                                            title="Edit target price"
-                                        >
-                                            {targetPrice?.toFixed(2)}
-                                        </span>
-                                    </span>
-                                }
-                            </div>
-                        }
+                        <TargetPriceSection
+                            isEditingTarget={isEditingTarget}
+                            setIsEditingTarget={setIsEditingTarget}
+                            onTargetChange={onTargetChange}
+                            targetPrice={targetPrice}
+                            isTargetReached={isTargetReached}
+                        />
                     </div>
                 </div>
 
