@@ -57,7 +57,7 @@ export function TeslaCore () {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const state = useRef<TeslaState | null>(null);
 
-    // Pure lazy initialization for the state ref to avoid 'react-hooks/purity' errors
+    // Pure lazy initialization for the state ref
     const getOrInitState = (): TeslaState => {
         if (!state.current) {
             state.current = {
@@ -77,15 +77,18 @@ export function TeslaCore () {
     useEffect(() => {
         const canvas = canvasRef.current;
         const currentState = getOrInitState();
+        let isMounted = true;
 
         if (!canvas) { return; }
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: true, });
 
         if (!ctx) { return; }
 
         let frameId: number;
 
         const render = (time: number) => {
+            if (!isMounted) { return; }
+
             const w = canvas.width;
             const h = canvas.height;
             const cx = w / 2;
@@ -156,11 +159,10 @@ export function TeslaCore () {
                 const segments = 12;
                 const startR = Math.sqrt(dx * dx + dy * dy);
 
-                // Optimization: generate path once, draw twice (inner core + outer glow)
-                // This is much faster than shadowBlur and avoids GPU mailbox errors
-                const path = new Path2D();
-
-                path.moveTo(startPos[0], startPos[1]);
+                // Optimization: avoid Path2D churn and complex gradients
+                // Use a single path for both stroke passes
+                ctx.beginPath();
+                ctx.moveTo(startPos[0], startPos[1]);
 
                 let lastX = startPos[0];
                 let lastY = startPos[1];
@@ -181,46 +183,46 @@ export function TeslaCore () {
                     const px = targetX + Math.cos(finalAngle + Math.PI / 2) * wobble;
                     const py = targetY + Math.sin(finalAngle + Math.PI / 2) * wobble;
 
-                    path.quadraticCurveTo(lastX, lastY, (lastX + px) / 2, (lastY + py) / 2);
+                    ctx.quadraticCurveTo(lastX, lastY, (lastX + px) / 2, (lastY + py) / 2);
                     lastX = px; lastY = py;
                 }
-                path.lineTo(lastX, lastY);
+                ctx.lineTo(lastX, lastY);
 
                 ctx.save();
-                // 1. Draw outer glow (thicker, lower opacity)
+                // 1. Draw outer glow
                 ctx.lineWidth = 4;
                 ctx.strokeStyle = `rgba(253, 224, 71, ${opacity * 0.3})`;
-                ctx.stroke(path);
+                ctx.stroke();
 
-                // 2. Draw inner core (thinner, bright)
+                // 2. Draw inner core
                 ctx.lineWidth = 1.2;
                 ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.9})`;
-                ctx.stroke(path);
+                ctx.stroke();
 
-                // 3. Graceful dissipation cloud
+                // 3. Graceful dissipation cloud - use simple circles instead of gradients to save GPU
                 const cloudProgress = Math.min(1, Math.max(0, (progress - 0.1) / 0.85));
                 const hitX = lastX;
                 const hitY = lastY;
 
-                for (let k = 0; k < 3; k++) {
+                for (let k = 0; k < 2; k++) {
                     const seed = (i * 13 + k * 7) % 100;
                     const jitter = seed % 5;
-                    const angle = (k / 3) * Math.PI * 2 + (seed * 0.2);
+                    const angle = (k / 2) * Math.PI * 2 + (seed * 0.2);
                     const px = hitX + Math.cos(angle) * jitter;
                     const py = hitY + Math.sin(angle) * jitter;
 
                     const s = (14 + (seed % 10)) * (1 + cloudProgress * 1.2);
-                    const cloudOpacity = opacity * (0.25 - k * 0.05) * (1 - cloudProgress * 0.7);
+                    const cloudOpacity = opacity * (0.2 - k * 0.05) * (1 - cloudProgress * 0.7);
 
                     if (cloudOpacity > 0.01) {
-                        const spotGrad = ctx.createRadialGradient(px, py, 0, px, py, s);
-
-                        spotGrad.addColorStop(0, `rgba(255, 255, 255, ${cloudOpacity})`);
-                        spotGrad.addColorStop(0.5, `rgba(253, 224, 71, ${cloudOpacity * 0.4})`);
-                        spotGrad.addColorStop(1, 'transparent');
-                        ctx.fillStyle = spotGrad;
+                        ctx.fillStyle = `rgba(253, 224, 71, ${cloudOpacity})`;
                         ctx.beginPath();
                         ctx.arc(px, py, s, 0, Math.PI * 2);
+                        ctx.fill();
+                        // Add a smaller, brighter center
+                        ctx.fillStyle = `rgba(255, 255, 255, ${cloudOpacity * 0.5})`;
+                        ctx.beginPath();
+                        ctx.arc(px, py, s * 0.4, 0, Math.PI * 2);
                         ctx.fill();
                     }
                 }
@@ -247,11 +249,16 @@ export function TeslaCore () {
                 ctx.beginPath(); ctx.arc(x, y, 1, 0, Math.PI * 2); ctx.fill();
             });
 
-            frameId = requestAnimationFrame(render);
+            if (isMounted) {
+                frameId = requestAnimationFrame(render);
+            }
         };
 
         frameId = requestAnimationFrame(render);
-        return () => cancelAnimationFrame(frameId);
+        return () => {
+            isMounted = false;
+            cancelAnimationFrame(frameId);
+        };
     }, []);
 
     return (
