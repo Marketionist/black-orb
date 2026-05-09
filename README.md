@@ -7,6 +7,10 @@ glassmorphism and a premium dark mode aesthetic. Real-time stock data is
 seamlessly fetched using the Yahoo Finance API via IPC to bypass browser CORS
 constraints, providing accurate, reliable market data.
 
+[![Actions Status](https://github.com/Marketionist/black-orb/workflows/Build%20and%20Test/badge.svg)](https://github.com/Marketionist/black-orb/actions)
+[![npm version](https://img.shields.io/npm/v/black-orb.svg)](https://www.npmjs.com/package/black-orb)
+[![npm license](https://img.shields.io/npm/l/black-orb.svg)](https://github.com/Marketionist/black-orb/blob/main/LICENSE)
+
 ## Features
 
 - **Anonymous**: stores your settings, target prices and ticker list locally in
