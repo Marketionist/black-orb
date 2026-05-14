@@ -38,7 +38,11 @@ function App () {
 
         return stored ? Number(stored) : DEFAULT_REFRESH_RATE;
     });
-    const [quotes, setQuotes,] = useState<StockQuote[]>([]);
+    const [quotes, setQuotes,] = useState<StockQuote[]>(() => {
+        const stored = localStorage.getItem('dashboard_quotes');
+
+        return stored ? JSON.parse(stored) : [];
+    });
     const [isLoading, setIsLoading,] = useState<boolean>(() => {
         // Only load if we have tickers
         const stored = localStorage.getItem('dashboard_tickers');
@@ -182,6 +186,7 @@ function App () {
                     );
 
                     setQuotes(results);
+                    localStorage.setItem('dashboard_quotes', JSON.stringify(results));
                     setLastUpdated(new Date());
                     checkAlarms(results);
                 }
@@ -303,7 +308,7 @@ function App () {
         if (hasError && quotes.length === 0) {
             return (
                 <div className="loader-container">
-                    <div className="error-message">Unable to load market data</div>
+                    <div className="error-message">Unable to load market data and localStorage data</div>
                     <button
                         className="btn-primary btn-centered"
                         onClick={handleResetStorage}
@@ -327,6 +332,11 @@ function App () {
 
         return (
             <div className="dashboard-grid">
+                {hasError && quotes.length > 0 &&
+                    <div className="global-error-notification">
+                        Unable to load market data, using last available
+                    </div>
+                }
                 {quotes.map((quote) =>
                     <StockCard
                         key={`${quote.symbol}-${resetKey}`}
@@ -341,6 +351,10 @@ function App () {
                         isMuted={tickerMutes[quote.symbol] || false}
                         onMuteToggle={() => handleMuteToggle(quote.symbol)}
                         onTargetUpdate={(isNew) => handleTargetUpdate(quote.symbol, isNew)}
+                        error={hasError && quotes.length > 0 ?
+                            'Unable to load market data, using last available' :
+                            null
+                        }
                     />
                 )}
 
