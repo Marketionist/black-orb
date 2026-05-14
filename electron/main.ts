@@ -321,22 +321,33 @@ app.whenReady().then(() => {
         try {
             const period30d = new Date(Date.now() - RECENT_HISTORY_DAYS * MS_PER_DAY);
             const period1y = new Date(Date.now() - DAYS_IN_YEAR * MS_PER_DAY);
+            const period3y = new Date(Date.now() - 3 * DAYS_IN_YEAR * MS_PER_DAY);
+            const periodAll = new Date(0); // All time
 
-            const [res30d, res1y,] = await Promise.all([
+            const [res30d, res1y, res3y, resAll,] = await Promise.all([
                 fetchChartSafe(symbol, { period1: period30d, interval: '1d', }),
                 fetchChartSafe(symbol, { period1: period1y, interval: '1wk', }),
+                fetchChartSafe(symbol, { period1: period3y, interval: '1wk', }),
+                fetchChartSafe(symbol, { period1: periodAll, interval: '1mo', }),
             ]);
 
             return {
                 chart30d: getSafeChartQuotes(res30d),
                 chart1y: getSafeChartQuotes(res1y),
+                chart3y: getSafeChartQuotes(res3y),
+                chartAll: getSafeChartQuotes(resAll),
             } satisfies HistoricalCharts;
         } catch (error: unknown) {
             console.error(
                 `Failed to fetch historical charts for ${symbol}:`,
                 error
             );
-            return { chart30d: [], chart1y: [], } satisfies HistoricalCharts;
+            return {
+                chart30d: [],
+                chart1y: [],
+                chart3y: [],
+                chartAll: [],
+            } satisfies HistoricalCharts;
         }
     });
 
