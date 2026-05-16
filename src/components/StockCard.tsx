@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState } from 'react';
 import {
     ArrowUpIcon, ArrowDownIcon, TrashIcon, BellIcon, CheckIcon, BellAlertIcon, BellSlashIcon,
-    CalculatorIcon
+    CalculatorIcon, ArrowLeftIcon, ArrowRightIcon
 } from '@heroicons/react/24/outline';
 
 
@@ -20,6 +20,7 @@ interface StockCardProps {
     isMuted: boolean;
     onMuteToggle: () => void;
     onTargetUpdate?: (isNew: boolean) => void;
+    error?: string | null;
 }
 
 
@@ -27,6 +28,7 @@ const DEFAULT_SPARKLINE_WIDTH = 80;
 const DEFAULT_SPARKLINE_HEIGHT = 30;
 const VIEWBOX_X_AXES = -25;
 const VIEWBOX_X_NO_AXES = -2;
+const PERCENT_MULTIPLIER = 100;
 const VIEWBOX_Y_AXES = -5;
 const VIEWBOX_Y_NO_AXES = -2;
 const VIEWBOX_W_EXTRA_AXES = 30;
@@ -374,8 +376,7 @@ function TargetPriceSection (props: TargetPriceSectionProps) {
     return (
         <div className="target-price-display">
             {targetPrice !== null &&
-                <span className={`target-price-text ${
-                    isTargetReached ? 'target-reached metallic-gold' : ''
+                <span className={`target-price-text ${isTargetReached ? 'target-reached metallic-gold' : ''
                 }`}>
                     $
                     <span
@@ -404,6 +405,7 @@ function CardFront (props: StockCardProps & {
     isEditingInvestment: boolean;
     setIsEditingInvestment: (v: boolean) => void;
     onFlip: () => void;
+    error?: string | null;
 }) {
 
     const {
@@ -411,7 +413,7 @@ function CardFront (props: StockCardProps & {
         targetPrice, isEditingTarget, setIsEditingTarget, onTargetChange,
         isMuted, onMuteToggle, isTargetReached,
         investmentSum, setInvestmentSum, isEditingInvestment, setIsEditingInvestment,
-        onFlip,
+        onFlip, error,
     } = props;
 
     const isPositive = change >= 0;
@@ -542,6 +544,7 @@ function CardFront (props: StockCardProps & {
                     />
                 </div>
             }
+            {error && <div className="card-front-error">{error}</div>}
         </div>
     );
 }
@@ -549,38 +552,47 @@ function CardFront (props: StockCardProps & {
 interface CardBackProps {
     symbol: string;
     isLoading: boolean;
-    show1Year: boolean;
+    showLongTerm: boolean;
     history30d: ChartDataPoint[] | null;
     history1y: ChartDataPoint[] | null;
-    onToggleHistory: (e: React.MouseEvent) => void;
+    history3y: ChartDataPoint[] | null;
+    historyAll: ChartDataPoint[] | null;
+    onToggleHistory: (long: boolean) => void;
     targetPrice: number | null;
     timezone?: string;
+    error: string | null;
+}
+
+function HistoricalChange ({ data, }: { data: ChartDataPoint[] | null }) {
+    if (!data || data.length < 2) { return null; }
+    const first = data[0].close;
+    const last = data[data.length - 1].close;
+    const change = ((last - first) / first) * PERCENT_MULTIPLIER;
+    const isPositive = change >= 0;
+
+    return (
+        <div className={`back-chart-change ${isPositive ? 'positive' : 'negative'}`}>
+            {isPositive ? <ArrowUpIcon className="change-icon" /> : <ArrowDownIcon className="change-icon" />}
+            {Math.abs(change).toFixed(2)}%
+        </div>
+    );
 }
 
 function CardBack (props: CardBackProps & { onFlip: () => void }) {
     const {
-        symbol, isLoading, show1Year, history30d, history1y, onToggleHistory, targetPrice, timezone,
-        onFlip,
+        symbol, isLoading, showLongTerm, history30d, history1y, history3y,
+        historyAll, onToggleHistory, targetPrice, timezone,
+        onFlip, error,
     } = props;
 
-    const historicalData = show1Year ? history1y : history30d;
-    let historicalChange = 0;
-    let absoluteChange = 0;
+    const dataTop = showLongTerm ? history3y : history30d;
+    const dataBottom = showLongTerm ? historyAll : history1y;
 
-    const PERC_MULTIPLIER = 100;
-    const MIN_DATA_POINTS = 2;
+    const labelTop = showLongTerm ? '3 years' : '30 days';
+    const labelBottom = showLongTerm ? 'All history' : '1 year';
 
-    if (historicalData && historicalData.length >= MIN_DATA_POINTS) {
-        const start = historicalData[0].close;
-        const end = historicalData[historicalData.length - 1].close;
-
-        historicalChange = (end - start) / start * PERC_MULTIPLIER;
-        absoluteChange = end - start;
-    }
-
-    const isHistoricalPositive = historicalChange >= 0;
     const CHART_WIDTH = 240;
-    const CHART_HEIGHT_BACK = 80;
+    const CHART_HEIGHT_BACK = 60;
 
     return (
         <div className="card-back" onClick={onFlip}>
@@ -589,43 +601,69 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                 <>
                     <div className="card-back-header" onClick={(e) => e.stopPropagation()}>
                         <div className="card-back-subtitle">
-                            {symbol} • {show1Year ? '1 year' : '30 days'}
+                            {symbol} • {labelTop} / {labelBottom}
+                        </div>
+                        <div className="card-back-actions">
+                            {showLongTerm ?
+                                <button
+                                    className="icon-btn-small"
+                                    onClick={() => onToggleHistory(false)}
+                                    title="Show 30 days / 1 year"
+                                    aria-label="Show 30 days / 1 year"
+                                >
+                                    <ArrowLeftIcon className="icon-inline" />
+                                </button> :
+                                <button
+                                    className="icon-btn-small"
+                                    onClick={() => onToggleHistory(true)}
+                                    title="Show 3 years / All history"
+                                    aria-label="Show 3 years / All history"
+                                >
+                                    <ArrowRightIcon className="icon-inline" />
+                                </button>
+                            }
                         </div>
                     </div>
 
                     <div className="sparkline-container sparkline-container-back" onClick={(e) => e.stopPropagation()}>
-                        {historicalData && historicalData.length > 0 ?
-                            <Sparkline
-                                data={historicalData}
-                                color={show1Year ? 'var(--text-muted)' : 'var(--accent-primary)'}
-                                showAxes={true}
-                                width={CHART_WIDTH}
-                                height={CHART_HEIGHT_BACK}
-                                targetPrice={targetPrice}
-                                timezone={timezone}
-                            /> :
-                            <span className="card-back-empty">No historical data</span>
-                        }
-                    </div>
-
-                    <div className="card-back-toggle" onClick={(e) => { e.stopPropagation(); onToggleHistory(e); }}>
-                        {show1Year ? 'Show 30 days' : 'Show 1 year'}
-                    </div>
-
-                    {historicalData && historicalData.length >= MIN_DATA_POINTS &&
-                        <div
-                            className={`stock-change ${isHistoricalPositive ? 'positive' : 'negative'} card-back-perf`}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            {isHistoricalPositive ?
-                                <ArrowUpIcon className="stat-arrow-icon" /> :
-                                <ArrowDownIcon className="stat-arrow-icon" />
+                        <div className="back-chart-item">
+                            <div className="back-chart-header">
+                                <div className="back-chart-label">{labelTop}</div>
+                                <HistoricalChange data={dataTop} />
+                            </div>
+                            {dataTop && dataTop.length > 0 ?
+                                <Sparkline
+                                    data={dataTop}
+                                    color="var(--text-muted)"
+                                    showAxes={true}
+                                    width={CHART_WIDTH}
+                                    height={CHART_HEIGHT_BACK}
+                                    targetPrice={targetPrice}
+                                    timezone={timezone}
+                                /> :
+                                <span className="card-back-empty">No {labelTop} data</span>
                             }
-                            <span>
-                                {Math.abs(absoluteChange).toFixed(2)} ({Math.abs(historicalChange).toFixed(2)}%)
-                            </span>
                         </div>
-                    }
+                        <div className="back-chart-item">
+                            <div className="back-chart-header">
+                                <div className="back-chart-label">{labelBottom}</div>
+                                <HistoricalChange data={dataBottom} />
+                            </div>
+                            {dataBottom && dataBottom.length > 0 ?
+                                <Sparkline
+                                    data={dataBottom}
+                                    color="var(--text-muted)"
+                                    showAxes={true}
+                                    width={CHART_WIDTH}
+                                    height={CHART_HEIGHT_BACK}
+                                    targetPrice={targetPrice}
+                                    timezone={timezone}
+                                /> :
+                                <span className="card-back-empty">No {labelBottom} data</span>
+                            }
+                        </div>
+                    </div>
+                    {error && <div className="card-back-error">{error}</div>}
                 </>
             }
         </div>
@@ -637,8 +675,11 @@ export function StockCard (props: StockCardProps) {
     const [isFlipped, setIsFlipped,] = useState(false);
     const [history30d, setHistory30d,] = useState<ChartDataPoint[] | null>(null);
     const [history1y, setHistory1y,] = useState<ChartDataPoint[] | null>(null);
+    const [history3y, setHistory3y,] = useState<ChartDataPoint[] | null>(null);
+    const [historyAll, setHistoryAll,] = useState<ChartDataPoint[] | null>(null);
     const [isLoadingHistory, setIsLoadingHistory,] = useState(false);
-    const [show1Year, setShow1Year,] = useState(false);
+    const [showLongTerm, setShowLongTerm,] = useState(false);
+    const [historyError, setHistoryError,] = useState<string | null>(null);
     const [isEditingTarget, setIsEditingTarget,] = useState(false);
     const [targetPrice, setTargetPrice,] = useState<number | null>(() => {
         const saved = localStorage.getItem(`dashboard_target_${symbol}`);
@@ -672,30 +713,69 @@ export function StockCard (props: StockCardProps) {
     const handleFlip = async () => {
         setIsFlipped(!isFlipped);
 
-        if (!isFlipped && history30d === null && !isLoadingHistory) {
-            setIsLoadingHistory(true);
+        if (isFlipped || isLoadingHistory || history30d !== null) {
+            return;
+        }
+
+        setIsLoadingHistory(true);
+        setHistoryError(null);
+
+        // Load from cache for immediate display
+        const cached = localStorage.getItem(`dashboard_history_${symbol}`);
+        let hasCachedData = false;
+
+        if (cached) {
             try {
-                type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<HistoricalCharts>;
-                const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
-                const ipcRenderer = winWithIpc.ipcRenderer;
+                const data = JSON.parse(cached);
 
-                if (ipcRenderer && ipcRenderer.invoke) {
-                    const data = await ipcRenderer.invoke('get-historical-charts', symbol);
-
+                if (data && data.chart30d) {
                     setHistory30d(data.chart30d);
                     setHistory1y(data.chart1y);
+                    setHistory3y(data.chart3y);
+                    setHistoryAll(data.chartAll);
+                    hasCachedData = true;
                 }
-            } catch (error) {
-                console.error('Failed to fetch historical charts', error);
-            } finally {
-                setIsLoadingHistory(false);
+            } catch (e) {
+                console.error('Failed to parse cached history', e);
             }
+        }
+
+        try {
+            type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<HistoricalCharts>;
+            const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
+            const ipcRenderer = winWithIpc.ipcRenderer;
+
+            if (!ipcRenderer || !ipcRenderer.invoke) {
+                return;
+            }
+
+            const data = await ipcRenderer.invoke('get-historical-charts', symbol);
+
+            if (data && data.chart30d && data.chart30d.length > 0) {
+                setHistory30d(data.chart30d);
+                setHistory1y(data.chart1y);
+                setHistory3y(data.chart3y);
+                setHistoryAll(data.chartAll);
+                localStorage.setItem(`dashboard_history_${symbol}`, JSON.stringify(data));
+            } else {
+                throw new Error('Empty data');
+            }
+        } catch (error) {
+            console.error('Failed to fetch historical charts', error);
+            const nowHasData = history30d !== null || hasCachedData;
+
+            if (nowHasData) {
+                setHistoryError('Unable to load market data, using last available');
+            } else {
+                setHistoryError('Unable to load market data and localStorage data');
+            }
+        } finally {
+            setIsLoadingHistory(false);
         }
     };
 
-    const onToggleHistory = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        setShow1Year(!show1Year);
+    const onToggleHistory = (long: boolean) => {
+        setShowLongTerm(long);
     };
 
     const isTargetReached = targetPrice !== null && props.chart && props.chart.length > 0 && (() => {
@@ -732,12 +812,15 @@ export function StockCard (props: StockCardProps) {
                 <CardBack
                     symbol={symbol}
                     isLoading={isLoadingHistory}
-                    show1Year={show1Year}
+                    showLongTerm={showLongTerm}
                     history30d={history30d}
                     history1y={history1y}
+                    history3y={history3y}
+                    historyAll={historyAll}
                     onToggleHistory={onToggleHistory}
                     targetPrice={targetPrice}
                     timezone={props.timezone}
+                    error={historyError}
                     onFlip={() => {
                         handleFlip().catch((err) => {
                             console.error('Flip failed', err);
