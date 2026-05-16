@@ -296,6 +296,12 @@ button {
     overflow: hidden;
     isolation: isolate;
     container-type: inline-size;
+    cursor: pointer;
+}
+
+.card-front > *,
+.card-back > * {
+    cursor: default;
 }
 
 .card-front::after,
@@ -779,16 +785,22 @@ main {
 }
 
 .sparkline-container-back {
-    padding-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding-top: 35px;
+    width: 100%;
 }
 
 .card-back-header {
     position: absolute;
     top: 15px;
     left: 15px;
+    right: 15px;
     padding: 0.2rem 0;
     display: flex;
     align-items: center;
+    justify-content: space-between;
 }
 
 .card-back-subtitle {
@@ -801,17 +813,80 @@ main {
     color: var(--text-muted);
 }
 
-.card-back-toggle {
-    position: absolute;
-    bottom: 15px;
-    right: 15px;
-    font-size: 0.75rem;
+.back-chart-item {
+    width: 100%;
+}
+
+.back-chart-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 2px;
+}
+
+.back-chart-label {
+    font-size: 0.8rem;
     color: var(--text-muted);
-    cursor: pointer;
-    border-bottom: 1px dashed var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.back-chart-change {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.back-chart-change.positive {
+    color: var(--success);
+}
+
+.back-chart-change.negative {
+    color: var(--danger);
+}
+
+.change-icon {
+    width: 0.8rem;
+    height: 0.8rem;
+    stroke-width: 2.5;
+}
+
+.card-back-actions {
+    display: flex;
+    gap: 8px;
     z-index: 10;
-    margin: 5px;
-    transform: translateZ(0);
+}
+
+.card-back-error,
+.card-front-error {
+    position: absolute;
+    bottom: 5px;
+    left: 15px;
+    right: 15px;
+    font-size: 0.6rem;
+    color: var(--danger);
+    text-align: center;
+    opacity: 0.9;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 2px 4px;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 100;
+}
+
+.global-error-notification {
+    grid-column: 1 / -1;
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--danger);
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .card-back-perf {
