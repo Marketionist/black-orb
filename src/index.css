@@ -55,6 +55,20 @@ body {
     padding: 2rem;
 }
 
+/* Selection styling for all elements */
+::selection {
+    /* highlight color */
+    background-color: var(--gold-light);
+    /* text color when selected */
+    color: #1f2126;
+}
+
+/* For Firefox (older versions) */
+::-moz-selection {
+    background-color: var(--gold-light);
+    color: #1f2126;
+}
+
 /* Tesla mode scrollbar hide */
 .tesla-mode-container {
     scrollbar-width: none;
