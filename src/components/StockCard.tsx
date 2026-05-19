@@ -591,6 +591,9 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
     const labelTop = showLongTerm ? '3 years' : '30 days';
     const labelBottom = showLongTerm ? 'All history' : '1 year';
 
+    const colorTop = showLongTerm ? 'var(--graph-blue)' : 'var(--gold-deep-medium)';
+    const colorBottom = showLongTerm ? 'var(--text-muted)' : 'var(--graph-brown)';
+
     const CHART_WIDTH = 240;
     const CHART_HEIGHT_BACK = 60;
 
@@ -634,7 +637,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                             {dataTop && dataTop.length > 0 ?
                                 <Sparkline
                                     data={dataTop}
-                                    color="var(--text-muted)"
+                                    color={colorTop}
                                     showAxes={true}
                                     width={CHART_WIDTH}
                                     height={CHART_HEIGHT_BACK}
@@ -652,7 +655,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                             {dataBottom && dataBottom.length > 0 ?
                                 <Sparkline
                                     data={dataBottom}
-                                    color="var(--text-muted)"
+                                    color={colorBottom}
                                     showAxes={true}
                                     width={CHART_WIDTH}
                                     height={CHART_HEIGHT_BACK}
