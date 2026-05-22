@@ -14,7 +14,7 @@ interface TeslaClockFrameProps {
 export function TeslaClockFrame ({ timezone, }: TeslaClockFrameProps) {
     const [timeStr, setTimeStr,] = useState('');
 
-    const startAngle = useMemo(() => {
+    const { startAngle, initialIsPM, } = useMemo(() => {
         // Sync initial rotation angle
         const resolvedTz = timezone === 'Local' ? undefined : timezone;
         const now = new Date();
@@ -27,8 +27,19 @@ export function TeslaClockFrame ({ timezone, }: TeslaClockFrameProps) {
         const mn = Number(parts.find((p) => p.type === 'minute')?.value || 0);
         const sc = Number(parts.find((p) => p.type === 'second')?.value || 0);
 
-        return ((hr + mn / 60 + sc / 3600) / 24) * 360;
+        // Calculate angle on a 12-hour scale
+        const angle = ((hr % 12 + mn / 60 + sc / 3600) / 12) * 360;
+
+        return { startAngle: angle, initialIsPM: hr >= 12, };
     }, [timezone,]);
+
+    const [prevTimezone, setPrevTimezone,] = useState(timezone);
+    const [isPM, setIsPM,] = useState(initialIsPM);
+
+    if (timezone !== prevTimezone) {
+        setPrevTimezone(timezone);
+        setIsPM(initialIsPM);
+    }
 
     useEffect(() => {
         // Keep title time string updated
@@ -42,6 +53,13 @@ export function TeslaClockFrame ({ timezone, }: TeslaClockFrameProps) {
             const now = new Date();
 
             setTimeStr(fmt.format(now));
+
+            const parts = new Intl.DateTimeFormat('en-US', {
+                hour: 'numeric', hour12: false, timeZone: resolvedTz,
+            }).formatToParts(now);
+            const hr = Number(parts.find((p) => p.type === 'hour')?.value || 0);
+
+            setIsPM(hr >= 12);
         };
 
         update();
@@ -50,6 +68,14 @@ export function TeslaClockFrame ({ timezone, }: TeslaClockFrameProps) {
         return () => clearInterval(timer);
     }, [timezone,]);
 
+    const digits = useMemo(() => {
+        // PM shows hours 12 to 24 (using 24 at the top, 13-23 for others)
+        // AM shows hours 0 to 12 (using 12 at the top, 1-11 for others)
+        return isPM ?
+            [24, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,] :
+            [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11,];
+    }, [isPM,]);
+
     return (
         <svg
             className="tesla-clock-canvas"
@@ -57,16 +83,16 @@ export function TeslaClockFrame ({ timezone, }: TeslaClockFrameProps) {
         >
             <g className="tesla-clock-group">
                 {/* Hours ring */}
-                <circle className="tesla-clock-ring" />
+                <circle className={`tesla-clock-ring ${isPM ? 'is-pm' : 'is-am'}`} />
 
-                {/* Hour digits (0-23) positioned by CSS via --i */}
-                {[...Array(24),].map((_, i) =>
+                {/* Hour digits (0-11) positioned by CSS via --i */}
+                {digits.map((digit, i) =>
                     <text
                         key={i}
                         className="tesla-clock-digit"
                         style={{ '--i': i, } as React.CSSProperties}
                     >
-                        {i}
+                        {digit}
                     </text>
                 )}
 

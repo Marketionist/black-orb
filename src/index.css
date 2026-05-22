@@ -765,7 +765,7 @@ select:focus {
     flex-direction: column;
     margin-bottom: 1.5rem;
     padding-bottom: 0.8rem;
-    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .price-row {
@@ -1137,6 +1137,10 @@ button.icon-btn-active svg {
     pointer-events: none;
 }
 
+.tesla-clock-ring.is-am {
+    stroke: rgba(0, 0, 0, 0.5);
+}
+
 .tesla-clock-digit {
     fill: var(--gold-deep-medium);
     font-size: 14px;
@@ -1148,7 +1152,7 @@ button.icon-btn-active svg {
     user-select: none;
     /* Position each digit around the circle using --i variable */
     /* 27.5vmin (sphere radius) + 26px (ring center offset) */
-    transform: rotate(calc(var(--i) * 15deg - 90deg)) translate(calc(27.5vmin + 26px)) rotate(calc(90deg - var(--i) * 15deg));
+    transform: rotate(calc(var(--i) * 30deg - 90deg)) translate(calc(27.5vmin + 26px)) rotate(calc(90deg - var(--i) * 30deg));
 }
 
 .tesla-clock-arrow {
@@ -1158,14 +1162,14 @@ button.icon-btn-active svg {
     stroke-width: 2;
     cursor: crosshair;
     pointer-events: auto;
-    /* Sync with start time and then rotate over 24h */
+    /* Sync with start time and then rotate over 12h */
     /* Use translate to keep it at fixed distance from 27.5vmin sphere */
     /* Tip at 9px offset, Base at 35px offset (36px including stroke outer edge) */
     transform: rotate(calc(var(--start-angle) - 90deg)) translate(calc(27.5vmin + 9px));
-    animation: tesla-rotate-24h 86400s linear infinite;
+    animation: tesla-rotate-12h 43200s linear infinite;
 }
 
-@keyframes tesla-rotate-24h {
+@keyframes tesla-rotate-12h {
     from {
         transform: rotate(calc(var(--start-angle) - 90deg)) translate(calc(27.5vmin + 9px));
     }
