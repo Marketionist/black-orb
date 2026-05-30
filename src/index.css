@@ -379,6 +379,9 @@ button {
     gap: 4px 8px;
     align-items: center;
     margin-bottom: 1rem;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .stock-symbol {
@@ -386,6 +389,9 @@ button {
     font-weight: 700;
     min-width: max-content;
     white-space: nowrap;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .stock-name {
@@ -395,6 +401,9 @@ button {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 48cqw;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
     /* Stay on the left half of the card */
     align-self: center;
     min-width: 0;
@@ -817,6 +826,9 @@ main {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .card-back-subtitle {
@@ -839,6 +851,9 @@ main {
     align-items: center;
     gap: 8px;
     margin-bottom: 2px;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .back-chart-label {
@@ -1329,6 +1344,9 @@ button.icon-btn-active svg {
     text-align: right;
     line-height: 1.4;
     word-break: break-word;
+    user-select: text;
+    -webkit-user-select: text;
+    cursor: text;
 }
 
 .investment-sum-value {
