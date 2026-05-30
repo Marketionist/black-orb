@@ -36,15 +36,33 @@ const VIEWBOX_W_EXTRA_NO_AXES = 4;
 const VIEWBOX_H_EXTRA_AXES = 15;
 const VIEWBOX_H_EXTRA_NO_AXES = 4;
 const BLUR_TIMEOUT_MS = 150;
+const DEFAULT_MAX_CHART_POINTS = 52;
+
+/**
+ * Evenly downsample data to maxPoints, always keeping first and last
+ */
+function downsampleData (data: ChartDataPoint[], maxPoints: number): ChartDataPoint[] {
+    if (data.length <= maxPoints) { return data; }
+    const result: ChartDataPoint[] = [data[0],];
+    const step = (data.length - 1) / (maxPoints - 1);
+
+    for (let i = 1; i < maxPoints - 1; i++) {
+        result.push(data[Math.round(i * step)]);
+    }
+    result.push(data[data.length - 1]);
+
+    return result;
+}
 
 function Sparkline ({
-    data,
+    data: rawData,
     color,
     showAxes = false,
     width = DEFAULT_SPARKLINE_WIDTH,
     height = DEFAULT_SPARKLINE_HEIGHT,
     targetPrice,
     timezone,
+    maxPoints,
 }: {
     data: ChartDataPoint[];
     color: string;
@@ -53,7 +71,10 @@ function Sparkline ({
     height?: number;
     targetPrice?: number | null;
     timezone?: string;
+    maxPoints?: number;
 }) {
+    const data = maxPoints ? downsampleData(rawData, maxPoints) : rawData;
+
     if (!data || data.length < 2) { return null; }
     const closes = data.map((d) => d.close);
     let min = Math.min(...closes);
@@ -643,6 +664,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                                     height={CHART_HEIGHT_BACK}
                                     targetPrice={targetPrice}
                                     timezone={timezone}
+                                    maxPoints={DEFAULT_MAX_CHART_POINTS}
                                 /> :
                                 <span className="card-back-empty">No {labelTop} data</span>
                             }
@@ -661,6 +683,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                                     height={CHART_HEIGHT_BACK}
                                     targetPrice={targetPrice}
                                     timezone={timezone}
+                                    maxPoints={DEFAULT_MAX_CHART_POINTS}
                                 /> :
                                 <span className="card-back-empty">No {labelBottom} data</span>
                             }

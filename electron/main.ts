@@ -117,6 +117,20 @@ function getSafeChartQuotes (chartData: { quotes: ChartDataPoint[] }): ChartData
 }
 
 /**
+ * Normalizes each data point's time component to 09:30:00 (session start)
+ * Yahoo returns arbitrary timestamps for weekly/monthly intervals
+ */
+function normalizeToSessionStart (quotes: ChartDataPoint[]): ChartDataPoint[] {
+    return quotes.map((q) => {
+        const d = new Date(q.date);
+
+        d.setHours(SESSION_START_HOUR, SESSION_START_MINUTE, 0, 0);
+
+        return { close: q.close, date: d.toISOString(), };
+    });
+}
+
+/**
  * Fetches chart data with graceful handling of validation errors.
  */
 async function fetchChartSafe (symbol: string, options: ChartOptions) {
@@ -333,9 +347,9 @@ app.whenReady().then(() => {
 
             return {
                 chart30d: getSafeChartQuotes(res30d),
-                chart1y: getSafeChartQuotes(res1y),
-                chart3y: getSafeChartQuotes(res3y),
-                chartAll: getSafeChartQuotes(resAll),
+                chart1y: normalizeToSessionStart(getSafeChartQuotes(res1y)),
+                chart3y: normalizeToSessionStart(getSafeChartQuotes(res3y)),
+                chartAll: normalizeToSessionStart(getSafeChartQuotes(resAll)),
             } satisfies HistoricalCharts;
         } catch (error: unknown) {
             console.error(
