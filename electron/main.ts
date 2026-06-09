@@ -5,6 +5,7 @@ app.disableHardwareAcceleration();
 app.commandLine.appendSwitch('disable-gpu');
 app.commandLine.appendSwitch('disable-gpu-compositing');
 app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('use-mock-keychain');
 
 import yf from './yahoo-finance';
 import { createRequire } from 'node:module';
