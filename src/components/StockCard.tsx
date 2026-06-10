@@ -167,19 +167,29 @@ function Sparkline ({
                     className="sparkline-dot"
                 />
             )}
-            {points.map((p, i) =>
-                <circle
-                    key={`hit-${i}`}
-                    cx={p.x}
-                    cy={p.y}
-                    r="6"
-                    className="sparkline-hit-area"
-                >
-                    <title>{`Price: $${p.val.close.toFixed(2)}\nDate: ${new Date(
-                        p.val.date
-                    ).toLocaleString(undefined, { ...tzOptions, hour12: false, })}`}</title>
-                </circle>
-            )}
+            {points.map((p, i) => {
+                const d = new Date(p.val.date);
+                const timeStr = d.toLocaleTimeString(undefined, {
+                    ...tzOptions,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false,
+                });
+                const dayStr = d.toLocaleDateString(undefined, { ...tzOptions, weekday: 'short', });
+                const dateStr = d.toLocaleDateString(undefined, tzOptions);
+
+                return (
+                    <circle
+                        key={`hit-${i}`}
+                        cx={p.x}
+                        cy={p.y}
+                        r="6"
+                        className="sparkline-hit-area"
+                    >
+                        <title>{`Price: $${p.val.close.toFixed(2)}, ${timeStr}\nDate: ${dayStr}, ${dateStr}`}</title>
+                    </circle>
+                );
+            })}
             {targetY !== null &&
                 <>
                     <line
@@ -574,9 +584,9 @@ interface CardBackProps {
     symbol: string;
     isLoading: boolean;
     showLongTerm: boolean;
+    history5d: ChartDataPoint[] | null;
     history30d: ChartDataPoint[] | null;
     history1y: ChartDataPoint[] | null;
-    history3y: ChartDataPoint[] | null;
     historyAll: ChartDataPoint[] | null;
     onToggleHistory: (long: boolean) => void;
     targetPrice: number | null;
@@ -601,16 +611,16 @@ function HistoricalChange ({ data, }: { data: ChartDataPoint[] | null }) {
 
 function CardBack (props: CardBackProps & { onFlip: () => void }) {
     const {
-        symbol, isLoading, showLongTerm, history30d, history1y, history3y,
+        symbol, isLoading, showLongTerm, history5d, history30d, history1y,
         historyAll, onToggleHistory, targetPrice, timezone,
         onFlip, error,
     } = props;
 
-    const dataTop = showLongTerm ? history3y : history30d;
-    const dataBottom = showLongTerm ? historyAll : history1y;
+    const dataTop = showLongTerm ? history1y : history5d;
+    const dataBottom = showLongTerm ? historyAll : history30d;
 
-    const labelTop = showLongTerm ? '3 years' : '30 days';
-    const labelBottom = showLongTerm ? 'All history' : '1 year';
+    const labelTop = showLongTerm ? '1 year' : '5 days';
+    const labelBottom = showLongTerm ? 'All history' : '30 days';
 
     const colorTop = showLongTerm ? 'var(--graph-blue)' : 'var(--gold-deep-medium)';
     const colorBottom = showLongTerm ? 'var(--text-muted)' : 'var(--graph-brown)';
@@ -632,16 +642,16 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                                 <button
                                     className="icon-btn-small"
                                     onClick={() => onToggleHistory(false)}
-                                    title="Show 30 days / 1 year"
-                                    aria-label="Show 30 days / 1 year"
+                                    title="Show 5 days / 30 days"
+                                    aria-label="Show 5 days / 30 days"
                                 >
                                     <ArrowLeftIcon className="icon-inline" />
                                 </button> :
                                 <button
                                     className="icon-btn-small"
                                     onClick={() => onToggleHistory(true)}
-                                    title="Show 3 years / All history"
-                                    aria-label="Show 3 years / All history"
+                                    title="Show 1 year / All history"
+                                    aria-label="Show 1 year / All history"
                                 >
                                     <ArrowRightIcon className="icon-inline" />
                                 </button>
@@ -699,9 +709,9 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
 export function StockCard (props: StockCardProps) {
     const { symbol, } = props;
     const [isFlipped, setIsFlipped,] = useState(false);
+    const [history5d, setHistory5d,] = useState<ChartDataPoint[] | null>(null);
     const [history30d, setHistory30d,] = useState<ChartDataPoint[] | null>(null);
     const [history1y, setHistory1y,] = useState<ChartDataPoint[] | null>(null);
-    const [history3y, setHistory3y,] = useState<ChartDataPoint[] | null>(null);
     const [historyAll, setHistoryAll,] = useState<ChartDataPoint[] | null>(null);
     const [isLoadingHistory, setIsLoadingHistory,] = useState(false);
     const [showLongTerm, setShowLongTerm,] = useState(false);
@@ -739,7 +749,7 @@ export function StockCard (props: StockCardProps) {
     const handleFlip = async () => {
         setIsFlipped(!isFlipped);
 
-        if (isFlipped || isLoadingHistory || history30d !== null) {
+        if (isFlipped || isLoadingHistory || history5d !== null) {
             return;
         }
 
@@ -754,10 +764,10 @@ export function StockCard (props: StockCardProps) {
             try {
                 const data = JSON.parse(cached);
 
-                if (data && data.chart30d) {
+                if (data && data.chart5d) {
+                    setHistory5d(data.chart5d);
                     setHistory30d(data.chart30d);
                     setHistory1y(data.chart1y);
-                    setHistory3y(data.chart3y);
                     setHistoryAll(data.chartAll);
                     hasCachedData = true;
                 }
@@ -777,10 +787,10 @@ export function StockCard (props: StockCardProps) {
 
             const data = await ipcRenderer.invoke('get-historical-charts', symbol);
 
-            if (data && data.chart30d && data.chart30d.length > 0) {
+            if (data && data.chart5d && data.chart5d.length > 0) {
+                setHistory5d(data.chart5d);
                 setHistory30d(data.chart30d);
                 setHistory1y(data.chart1y);
-                setHistory3y(data.chart3y);
                 setHistoryAll(data.chartAll);
                 localStorage.setItem(`dashboard_history_${symbol}`, JSON.stringify(data));
             } else {
@@ -788,7 +798,7 @@ export function StockCard (props: StockCardProps) {
             }
         } catch (error) {
             console.error('Failed to fetch historical charts', error);
-            const nowHasData = history30d !== null || hasCachedData;
+            const nowHasData = history5d !== null || hasCachedData;
 
             if (nowHasData) {
                 setHistoryError('Unable to load market data, using last available');
@@ -839,9 +849,9 @@ export function StockCard (props: StockCardProps) {
                     symbol={symbol}
                     isLoading={isLoadingHistory}
                     showLongTerm={showLongTerm}
+                    history5d={history5d}
                     history30d={history30d}
                     history1y={history1y}
-                    history3y={history3y}
                     historyAll={historyAll}
                     onToggleHistory={onToggleHistory}
                     targetPrice={targetPrice}

@@ -14,9 +14,9 @@ export interface StockQuote {
 }
 
 export interface HistoricalCharts {
+  chart5d: ChartDataPoint[]
   chart30d: ChartDataPoint[]
   chart1y: ChartDataPoint[]
-  chart3y: ChartDataPoint[]
   chartAll: ChartDataPoint[]
 }
 
