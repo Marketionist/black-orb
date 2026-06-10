@@ -1153,7 +1153,7 @@ button.icon-btn-active svg {
 }
 
 .tesla-clock-ring.is-am {
-    stroke: rgba(0, 0, 0, 0.5);
+    stroke: rgba(0, 0, 0, 0.2);
 }
 
 .tesla-clock-digit {
