@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import {
-    Cog6ToothIcon, BellIcon, BellSlashIcon, BellAlertIcon
+    Cog6ToothIcon, BellIcon, BellSlashIcon, BellAlertIcon, TrashIcon
 } from '@heroicons/react/24/outline';
 import { StockCard } from './components/StockCard';
 import { SettingsModal } from './components/SettingsModal';
@@ -310,12 +310,17 @@ function App () {
                 <div className="loader-container">
                     <div className="error-message">Unable to load market data and localStorage data</div>
                     <button
-                        className="btn-primary btn-centered"
-                        onClick={handleResetStorage}
+                        className="btn-remove icon-btn btn-centered"
+                        onClick={() => {
+                            // eslint-disable-next-line no-alert
+                            if (window.confirm('Are you sure you want to reset all storage?')) {
+                                handleResetStorage();
+                            }
+                        }}
                         title="Reset all storage"
                         aria-label="Reset all storage"
                     >
-                        Reset all storage
+                        <TrashIcon />
                     </button>
                 </div>
             );
@@ -361,14 +366,14 @@ function App () {
                 {quotes.length === 0 && !isLoading &&
                     <div className="empty-state">
                         <h3>No Tickers</h3>
-                        <p>Add some stock symbols in the settings to get started.</p>
+                        <p>Add some stock symbols in the settings to get started</p>
                         <button
-                            className="btn-primary btn-centered"
+                            className="icon-btn btn-centered"
                             onClick={() => setIsSettingsOpen(true)}
                             title="Open settings"
                             aria-label="Open settings"
                         >
-                            Open Settings
+                            <Cog6ToothIcon />
                         </button>
 
                     </div>
