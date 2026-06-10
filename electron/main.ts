@@ -334,22 +334,22 @@ app.whenReady().then(() => {
 
     ipcMain.handle('get-historical-charts', async (_event, symbol: string) => {
         try {
+            const period5d = new Date(Date.now() - 7 * MS_PER_DAY);
             const period30d = new Date(Date.now() - RECENT_HISTORY_DAYS * MS_PER_DAY);
             const period1y = new Date(Date.now() - DAYS_IN_YEAR * MS_PER_DAY);
-            const period3y = new Date(Date.now() - 3 * DAYS_IN_YEAR * MS_PER_DAY);
             const periodAll = new Date(0); // All time
 
-            const [res30d, res1y, res3y, resAll,] = await Promise.all([
+            const [res5d, res30d, res1y, resAll,] = await Promise.all([
+                fetchChartSafe(symbol, { period1: period5d, interval: '1h', }),
                 fetchChartSafe(symbol, { period1: period30d, interval: '1d', }),
                 fetchChartSafe(symbol, { period1: period1y, interval: '1wk', }),
-                fetchChartSafe(symbol, { period1: period3y, interval: '1wk', }),
                 fetchChartSafe(symbol, { period1: periodAll, interval: '1mo', }),
             ]);
 
             return {
+                chart5d: getSafeChartQuotes(res5d),
                 chart30d: getSafeChartQuotes(res30d),
                 chart1y: normalizeToSessionStart(getSafeChartQuotes(res1y)),
-                chart3y: normalizeToSessionStart(getSafeChartQuotes(res3y)),
                 chartAll: normalizeToSessionStart(getSafeChartQuotes(resAll)),
             } satisfies HistoricalCharts;
         } catch (error: unknown) {
@@ -358,9 +358,9 @@ app.whenReady().then(() => {
                 error
             );
             return {
+                chart5d: [],
                 chart30d: [],
                 chart1y: [],
-                chart3y: [],
                 chartAll: [],
             } satisfies HistoricalCharts;
         }
