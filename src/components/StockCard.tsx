@@ -802,12 +802,12 @@ export function StockCard (props: StockCardProps) {
         }
 
         setIsLoadingHistory(true);
-        setHistoryError(null);
 
         const hasCachedData = loadHistoryFromCache();
 
         try {
             await fetchHistoryFromApi();
+            setHistoryError(null);
         } catch (error) {
             console.error('Failed to fetch historical charts', error);
             const nowHasData = history5d !== null || hasCachedData;
