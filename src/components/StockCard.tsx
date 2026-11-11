@@ -21,6 +21,7 @@ interface StockCardProps {
     onMuteToggle: () => void;
     onTargetUpdate?: (isNew: boolean) => void;
     error?: string | null;
+    refreshRate?: number;
 }
 
 
@@ -37,6 +38,7 @@ const VIEWBOX_H_EXTRA_AXES = 15;
 const VIEWBOX_H_EXTRA_NO_AXES = 4;
 const BLUR_TIMEOUT_MS = 150;
 const DEFAULT_MAX_CHART_POINTS = 52;
+const DEFAULT_HISTORY_STALE_SECONDS = 3600;
 
 /**
  * Evenly downsample data to maxPoints, always keeping first and last
@@ -620,7 +622,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
     const dataBottom = showLongTerm ? historyAll : history30d;
 
     const labelTop = showLongTerm ? '1 year' : '5 days';
-    const labelBottom = showLongTerm ? 'All history' : '30 days';
+    const labelBottom = showLongTerm ? 'All time' : '30 days';
 
     const colorTop = showLongTerm ? 'var(--graph-blue)' : 'var(--gold-deep-medium)';
     const colorBottom = showLongTerm ? 'var(--text-muted)' : 'var(--graph-brown)';
@@ -650,8 +652,8 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
                                 <button
                                     className="icon-btn-small"
                                     onClick={() => onToggleHistory(true)}
-                                    title="Show 1 year / All history"
-                                    aria-label="Show 1 year / All history"
+                                    title="Show 1 year / All time"
+                                    aria-label="Show 1 year / All time"
                                 >
                                     <ArrowRightIcon className="icon-inline" />
                                 </button>
@@ -707,7 +709,7 @@ function CardBack (props: CardBackProps & { onFlip: () => void }) {
 }
 
 export function StockCard (props: StockCardProps) {
-    const { symbol, } = props;
+    const { symbol, refreshRate, } = props;
     const [isFlipped, setIsFlipped,] = useState(false);
     const [history5d, setHistory5d,] = useState<ChartDataPoint[] | null>(null);
     const [history30d, setHistory30d,] = useState<ChartDataPoint[] | null>(null);
@@ -716,6 +718,7 @@ export function StockCard (props: StockCardProps) {
     const [isLoadingHistory, setIsLoadingHistory,] = useState(false);
     const [showLongTerm, setShowLongTerm,] = useState(false);
     const [historyError, setHistoryError,] = useState<string | null>(null);
+    const [historyFetchedAt, setHistoryFetchedAt,] = useState<number | null>(null);
     const [isEditingTarget, setIsEditingTarget,] = useState(false);
     const [targetPrice, setTargetPrice,] = useState<number | null>(() => {
         const saved = localStorage.getItem(`dashboard_target_${symbol}`);
@@ -746,56 +749,65 @@ export function StockCard (props: StockCardProps) {
     };
 
 
+    const loadHistoryFromCache = (): boolean => {
+        const cached = localStorage.getItem(`dashboard_history_${symbol}`);
+
+        if (!cached) { return false; }
+        try {
+            const data = JSON.parse(cached);
+
+            if (data && data.chart5d) {
+                setHistory5d(data.chart5d);
+                setHistory30d(data.chart30d);
+                setHistory1y(data.chart1y);
+                setHistoryAll(data.chartAll);
+                return true;
+            }
+        } catch (e) {
+            console.error('Failed to parse cached history', e);
+        }
+        return false;
+    };
+
+    const fetchHistoryFromApi = async (): Promise<void> => {
+        type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<HistoricalCharts>;
+        const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
+        const ipcRenderer = winWithIpc.ipcRenderer;
+
+        if (!ipcRenderer || !ipcRenderer.invoke) { return; }
+
+        const data = await ipcRenderer.invoke('get-historical-charts', symbol);
+
+        if (data && data.chart5d && data.chart5d.length > 0) {
+            setHistory5d(data.chart5d);
+            setHistory30d(data.chart30d);
+            setHistory1y(data.chart1y);
+            setHistoryAll(data.chartAll);
+            setHistoryFetchedAt(Date.now());
+            localStorage.setItem(`dashboard_history_${symbol}`, JSON.stringify(data));
+        } else {
+            throw new Error('Empty data');
+        }
+    };
+
     const handleFlip = async () => {
         setIsFlipped(!isFlipped);
 
-        if (isFlipped || isLoadingHistory || history5d !== null) {
+        const stalePeriodMs = (refreshRate ?? DEFAULT_HISTORY_STALE_SECONDS) * 1000;
+        const isStale = !historyFetchedAt || (Date.now() - historyFetchedAt > stalePeriodMs);
+        const hasAllCharts = history5d !== null && history30d !== null && history1y !== null && historyAll !== null;
+
+        if (isFlipped || isLoadingHistory || (hasAllCharts && !isStale)) {
             return;
         }
 
         setIsLoadingHistory(true);
         setHistoryError(null);
 
-        // Load from cache for immediate display
-        const cached = localStorage.getItem(`dashboard_history_${symbol}`);
-        let hasCachedData = false;
-
-        if (cached) {
-            try {
-                const data = JSON.parse(cached);
-
-                if (data && data.chart5d) {
-                    setHistory5d(data.chart5d);
-                    setHistory30d(data.chart30d);
-                    setHistory1y(data.chart1y);
-                    setHistoryAll(data.chartAll);
-                    hasCachedData = true;
-                }
-            } catch (e) {
-                console.error('Failed to parse cached history', e);
-            }
-        }
+        const hasCachedData = loadHistoryFromCache();
 
         try {
-            type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<HistoricalCharts>;
-            const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
-            const ipcRenderer = winWithIpc.ipcRenderer;
-
-            if (!ipcRenderer || !ipcRenderer.invoke) {
-                return;
-            }
-
-            const data = await ipcRenderer.invoke('get-historical-charts', symbol);
-
-            if (data && data.chart5d && data.chart5d.length > 0) {
-                setHistory5d(data.chart5d);
-                setHistory30d(data.chart30d);
-                setHistory1y(data.chart1y);
-                setHistoryAll(data.chartAll);
-                localStorage.setItem(`dashboard_history_${symbol}`, JSON.stringify(data));
-            } else {
-                throw new Error('Empty data');
-            }
+            await fetchHistoryFromApi();
         } catch (error) {
             console.error('Failed to fetch historical charts', error);
             const nowHasData = history5d !== null || hasCachedData;

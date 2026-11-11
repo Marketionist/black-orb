@@ -356,6 +356,7 @@ function App () {
                         isMuted={tickerMutes[quote.symbol] || false}
                         onMuteToggle={() => handleMuteToggle(quote.symbol)}
                         onTargetUpdate={(isNew) => handleTargetUpdate(quote.symbol, isNew)}
+                        refreshRate={refreshRate}
                         error={hasError && quotes.length > 0 ?
                             'Unable to load market data, using last available' :
                             null
