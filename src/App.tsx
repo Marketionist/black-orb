@@ -172,7 +172,6 @@ function App () {
             }
 
             setIsLoading(true);
-            setHasError(false);
             try {
                 type IpcInvoke = (channel: string, ...args: unknown[]) => Promise<StockQuote[]>;
                 const winWithIpc = window as unknown as { ipcRenderer: { invoke: IpcInvoke } };
@@ -189,6 +188,7 @@ function App () {
                     localStorage.setItem('dashboard_quotes', JSON.stringify(results));
                     setLastUpdated(new Date());
                     checkAlarms(results);
+                    setHasError(false);
                 }
             } catch (error) {
                 console.error('Failed to fetch stock quotes', error);
